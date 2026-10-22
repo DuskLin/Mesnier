@@ -13,7 +13,7 @@ Mesnier 计划以新版 [Kimi Code](https://github.com/MoonshotAI/kimi-code) 的
 
 应用负责工作空间、对话、看板、任务编排、验收与产物管理；派生内核复用并按需扩展 Kimi Code 的模型调用、工具循环、上下文、权限交互和会话能力。首版目标是不要求用户预装 Agent CLI，在应用内完成模型配置后开始工作。
 
-> **项目状态：产品规划阶段，Agent 底座方向已确定。** 当前仓库包含产品说明、品牌素材和 OpenSpec 规划，尚未引入 Kimi Code 源码，也没有可运行的应用。以下功能、平台和兼容性均为建设目标，不代表已经实现或验证通过。当前变更见 [采用 Kimi Code Agent 底座](openspec/changes/adopt-kimi-agent-foundation/proposal.md)。
+> **项目状态：桌面成品实施中，尚未完成发行验收。** 当前正在按 [交付目标](docs/goals/mesnier-app.md) 建设 macOS 应用，运行时、工作台与独立验收分别在专属工作区推进。以下功能、平台和兼容性均为建设目标，不代表已经实现或验证通过。当前变更见 [采用 Kimi Code Agent 底座](openspec/changes/adopt-kimi-agent-foundation/proposal.md)。
 
 ## 为什么做 Mesnier
 
@@ -87,7 +87,7 @@ Work 任务不要求绑定 Git 仓库。Coding 任务可以关联仓库，并在
 | Kimi Code 派生内核 | 复用并按需扩展执行循环、上下文、模型适配、工具调用、权限与会话机制 |
 | 模型与工具 | 按配置访问模型服务、本地文件和命令，以及后续接入的 MCP、Skills 和专用工具 |
 
-采用新版 `MoonshotAI/kimi-code`，不以已归档的 Python `kimi-cli` 作为新底座。优先围绕其 SDK、会话与事件接口建立 Mesnier 自己的集成边界；源码如何纳入、执行组件如何分发，以及采用何种进程通信方式，在工程初始化前通过验证确定。
+采用新版 `MoonshotAI/kimi-code`，不以已归档的 Python `kimi-cli` 作为新底座。优先围绕其 SDK、会话与事件接口建立 Mesnier 自己的集成边界；工程方案采用仓内受控纳入源码、自有封装、独立 Node 24 子进程与 JSONL RPC；来源和补丁按版本记录。
 
 二开保留可追溯的上游版本、许可证和补丁记录，优先在集成层、工具扩展和配置层实现差异。升级前验证执行、权限、取消、恢复和数据兼容性，不假定内部 SDK 永远稳定。
 
@@ -120,7 +120,7 @@ flowchart TB
 
 统一模型包含项目、会话、任务、执行记录和产物：一个任务可以关联多次执行，每次执行记录内核版本、Agent 与模型配置快照、工作目录、状态、事件及产物；凭据只记录引用。Mesnier 保存产品事实，并通过明确关联使用内核会话，不让 Chat 与 Board 分别维护一份执行状态。任务是否通过验收，与某一次执行是否成功结束分别记录。
 
-初期优先验证本地桌面体验，目标平台为 macOS、Windows 和 Linux；远程执行主机与 Web 入口留作后续扩展。Agent 源码基础已选定，桌面框架、宿主实现、通信方式和持久化方案仍待工程选型，不直接沿用参考项目的完整技术栈。
+初期优先验证本地桌面体验，目标平台为 macOS、Windows 和 Linux；远程执行主机与 Web 入口留作后续扩展。首版采用 Electron + React + TypeScript，主进程管理版本化产品状态，独立 Node 24 运行内置 harness；所有应用数据默认置于 `~/.mesnier`。当前交付平台为本机 macOS，其他平台仍是路线图。
 
 ## 建设路线
 

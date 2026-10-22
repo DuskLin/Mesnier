@@ -1,6 +1,6 @@
 # 贡献指南
 
-Mesnier 当前处于产品规划阶段，已选定 Kimi Code 作为 Agent 二开底座，尚无可运行应用；桌面框架、宿主实现与持久化等工程选型仍待确定。提交前请阅读 [README.md](README.md)、[AGENTS.md](AGENTS.md)、[OpenSpec 配置](openspec/config.yaml) 和 [LESSONS.md](LESSONS.md)，避免将建设目标表述为已交付能力。
+Mesnier 正在实施首个 macOS 桌面成品：Electron + React + TypeScript 界面与宿主、独立 Node 24 内置 Kimi harness。检查命令随工程初始化落地，功能状态以实际验证为准。提交前请阅读 [README.md](README.md)、[AGENTS.md](AGENTS.md)、[OpenSpec 配置](openspec/config.yaml) 和 [LESSONS.md](LESSONS.md)，避免将建设目标表述为已交付能力。
 
 ## 变更流程
 
