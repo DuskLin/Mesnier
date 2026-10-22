@@ -1,5 +1,5 @@
 import { Bot, CheckCheck, ClipboardList, FileText, FolderOpen, MessageSquare, Pencil, Play, Plus, Search, ShieldCheck, X } from 'lucide-react';
-import type { Approval, Artifact, Run, Snapshot, Task, TaskStatus } from '@mesnier/shared';
+import type { Approval, Artifact, ModelConfig, Run, Snapshot, Task, TaskStatus } from '@mesnier/shared';
 import { useState } from 'react';
 import { isActive, latestRun, taskLabels } from '../model';
 import { ApprovalCard, StatusBadge } from './Chat';
@@ -41,8 +41,8 @@ export function Board({ snapshot, projectId, selectedTaskId, onSelect, onCreate 
   </>;
 }
 
-export function Inspector({ snapshot, sessionId, task, onClose, onOpenChat, onEditTask, onStart, onAccept, onStop, onRespond, onArtifact, busy }: {
-  snapshot: Snapshot; sessionId?: string; task?: Task; onClose: () => void; onOpenChat: (sessionId: string) => void;
+export function Inspector({ snapshot, sessionId, task, model, onClose, onOpenChat, onEditTask, onStart, onAccept, onStop, onRespond, onArtifact, busy }: {
+  snapshot: Snapshot; sessionId?: string; task?: Task; model?: ModelConfig; onClose: () => void; onOpenChat: (sessionId: string) => void;
   onEditTask: (task: Task) => void; onStart: (task: Task) => void; onAccept: (task: Task) => void; onStop: (run: Run) => void;
   onRespond: (approval: Approval, decision: 'approved' | 'rejected') => void; onArtifact: (artifact: Artifact) => void; busy: (key: string) => boolean;
 }) {
@@ -54,7 +54,7 @@ export function Inspector({ snapshot, sessionId, task, onClose, onOpenChat, onEd
   return <aside className="inspector" aria-label={task ? '任务详情' : '产物与执行记录'}>
     <div className="inspector-heading"><h2>{task ? <ClipboardList size={15} /> : <FolderOpen size={15} />}{task ? '任务详情' : '产物与记录'}</h2><IconButton label="关闭详情面板" onClick={onClose}><X size={17} /></IconButton></div>
     <div className="inspector-content">
-      {task && <><h3>{task.title}</h3><span className={`status-badge ${task.status}`}>{taskLabels[task.status]}</span><dl className="detail-grid"><dt>指派 Agent</dt><dd>{snapshot.agents.find((agent) => agent.id === task.agentId)?.name ?? task.agentId}</dd><dt>创建时间</dt><dd>{shortDate(task.createdAt)}</dd>{task.acceptedAt && <><dt>验收时间</dt><dd>{shortDate(task.acceptedAt)}</dd></>}</dl>{task.description && <><h4>任务目标</h4><p className="inspector-description">{task.description}</p></>}{task.acceptanceCriteria && <><h4>验收标准</h4><p className="inspector-description">{task.acceptanceCriteria}</p></>}{task.acceptanceNote && <><h4>验收说明</h4><p className="inspector-description">{task.acceptanceNote}</p></>}
+      {task && <><h3>{task.title}</h3><span className={`status-badge ${task.status}`}>{taskLabels[task.status]}</span><dl className="detail-grid"><dt>指派 Agent</dt><dd>{snapshot.agents.find((agent) => agent.id === task.agentId)?.name ?? task.agentId}</dd><dt>后续模型</dt><dd>{model?.name ?? '尚未配置'}</dd><dt>创建时间</dt><dd>{shortDate(task.createdAt)}</dd>{task.acceptedAt && <><dt>验收时间</dt><dd>{shortDate(task.acceptedAt)}</dd></>}</dl>{task.description && <><h4>任务目标</h4><p className="inspector-description">{task.description}</p></>}{task.acceptanceCriteria && <><h4>验收标准</h4><p className="inspector-description">{task.acceptanceCriteria}</p></>}{task.acceptanceNote && <><h4>验收说明</h4><p className="inspector-description">{task.acceptanceNote}</p></>}
         <div className="detail-actions"><Button className="small" onClick={() => onOpenChat(task.sessionId)}><MessageSquare size={13} />进入对话</Button><Button className="small" variant="ghost" onClick={() => onEditTask(task)}><Pencil size={12} />编辑</Button>
           {!active && task.status !== 'done' && task.status !== 'review' && <Button className="small" variant="primary" busy={busy(`start:${task.id}`)} disabled={!snapshot.runtime.ready || !snapshot.models.length} onClick={() => onStart(task)}><Play size={12} />{current ? '重新执行' : '开始执行'}</Button>}
           {task.status === 'review' && !active && current?.status === 'succeeded' && <Button className="small" variant="primary" onClick={() => onAccept(task)}><CheckCheck size={13} />验收通过</Button>}
@@ -64,7 +64,7 @@ export function Inspector({ snapshot, sessionId, task, onClose, onOpenChat, onEd
       </>}
       {approvals.map((approval) => <ApprovalCard key={approval.requestId} approval={approval} busy={busy(`approval:${approval.requestId}`)} onRespond={onRespond} />)}
       <h4>工作产物 <span className="muted">{artifacts.length ? `· ${artifacts.length}` : ''}</span></h4>
-      {artifacts.length ? artifacts.map((artifact) => <button type="button" className="artifact-row" key={artifact.id} onClick={() => onArtifact(artifact)}><span className="file-icon"><FileText size={17} /></span><span className="file-info"><strong title={artifact.relativePath}>{artifact.relativePath}</strong><small>{artifact.change === 'created' ? '新建' : artifact.change === 'deleted' ? '已删除' : '已修改'} · {Math.max(1, Math.round(artifact.size / 1024))} KB · {shortDate(artifact.createdAt)}</small></span></button>) : <EmptyState icon={<FileText size={20} />} title="成果会在这里汇集">执行中创建或修改的文件，会关联到当前工作。</EmptyState>}
+      {artifacts.length ? artifacts.map((artifact) => <button type="button" className="artifact-row" key={artifact.id} onClick={() => onArtifact(artifact)}><span className="file-icon"><FileText size={17} /></span><span className="file-info"><strong title={artifact.relativePath}>{artifact.relativePath}</strong><small>{artifact.change === 'created' ? '新建' : artifact.change === 'deleted' ? '已删除' : '已修改'} · {artifact.size < 1024 ? `${artifact.size} B` : `${Math.round(artifact.size / 1024)} KB`} · {shortDate(artifact.createdAt)}</small></span></button>) : <EmptyState icon={<FileText size={20} />} title="成果会在这里汇集">执行中创建或修改的文件，会关联到当前工作。</EmptyState>}
       <h4>执行历史 <span className="muted">{runs.length ? `· ${runs.length}` : ''}</span></h4>
       {runs.length ? runs.map((run, index) => <div key={run.id} className="run-history"><div className="run-top"><span>第 {runs.length - index} 次执行</span><StatusBadge run={run} /></div><p>{shortDate(run.createdAt)}<br />{run.model.model} · {run.agent.name}<br /><span className="mono">{run.id.slice(0, 14)}</span>{run.retryOf ? ' · 重试记录' : ''}</p>{run.error && <p className="run-error">{run.error}</p>}<p>输入用量：{run.usage?.inputTokens == null ? '未提供' : `${run.usage.inputTokens.toLocaleString()} tokens`}<br />输出用量：{run.usage?.outputTokens == null ? '未提供' : `${run.usage.outputTokens.toLocaleString()} tokens`}</p></div>) : <p className="sidebar-empty">尚未开始执行。</p>}
     </div>

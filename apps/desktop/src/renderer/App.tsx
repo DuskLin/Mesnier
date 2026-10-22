@@ -57,6 +57,7 @@ export function App() {
   }, [snapshot, projectId, sessionId, selectedModelId]);
   useEffect(() => { if (projectId) savePreference('mesnier.project', projectId); }, [projectId]);
   useEffect(() => { if (sessionId) savePreference('mesnier.session', sessionId); }, [sessionId]);
+  useEffect(() => { if (snapshot?.defaultModelId) setSelectedModelId(snapshot.defaultModelId); }, [snapshot?.defaultModelId]);
   useEffect(() => { if (notice?.kind !== 'success') return; const timer = setTimeout(() => setNotice(undefined), 4500); return () => clearTimeout(timer); }, [notice]);
 
   const command = useCallback(async <T,>(key: string, work: () => Promise<T>): Promise<T | undefined> => {
@@ -130,7 +131,7 @@ export function App() {
           <div className="view-heading"><div style={{ minWidth: 0 }}><h1 style={{ fontSize: 17, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={session.title}>{session.title}</h1><p>{task ? `关联任务 · ${task.title}` : '把当前想法与接下来的行动连接起来。'}</p></div><div className="actions"><IconButton label="重命名会话" onClick={() => { setRename(session.title); setDialog({ kind: 'rename', session }); }}><Pencil size={14} /></IconButton><Button className="small" onClick={() => { if (task) { setView('board'); setInspector(true); } else setDialog({ kind: 'task', session }); }}><ClipboardList size={14} />{task ? '查看任务' : '加入看板'}</Button></div></div>
           <Chat snapshot={snapshot} session={session} draft={drafts[session.id] ?? ''} setDraft={(text) => setDrafts((previous) => ({ ...previous, [session.id]: text }))} selectedModelId={selectedModelId} onSelectModel={setSelectedModelId} onSend={() => void send()} onStop={stop} onSettings={() => setDialog({ kind: 'settings' })} onRespond={respond} onRetry={(run) => setDialog({ kind: 'retry', run })} onOpenLink={openExternal} busy={busy} />
         </>}
-      </div>{inspector && <Inspector snapshot={snapshot} sessionId={session?.id} task={task} onClose={() => setInspector(false)} onOpenChat={openChat} onEditTask={(target) => setDialog({ kind: 'task', task: target })} onStart={start} onAccept={(target) => setDialog({ kind: 'accept', task: target })} onStop={stop} onRespond={respond} onArtifact={(artifact) => setDialog({ kind: 'artifact', artifact })} busy={busy} />}</div>
+      </div>{inspector && <Inspector snapshot={snapshot} sessionId={session?.id} task={task} model={snapshot.models.find((item) => item.id === selectedModelId)} onClose={() => setInspector(false)} onOpenChat={openChat} onEditTask={(target) => setDialog({ kind: 'task', task: target })} onStart={start} onAccept={(target) => setDialog({ kind: 'accept', task: target })} onStop={stop} onRespond={respond} onArtifact={(artifact) => setDialog({ kind: 'artifact', artifact })} busy={busy} />}</div>
     </main>
     {dialog?.kind === 'project' && <ProjectDialog bridge={bridge} onClose={() => setDialog(undefined)} onCreated={(created) => { requestedSelection.current = { projectId: created.id }; setProjectId(created.id); setSessionId(''); setDialog(undefined); setNotice({ kind: 'success', text: `已添加项目「${created.name}」。` }); }} />}
     {dialog?.kind === 'settings' && <Settings snapshot={snapshot} bridge={bridge} theme={theme} setTheme={updateTheme} onClose={() => setDialog(undefined)} />}
