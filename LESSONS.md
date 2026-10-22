@@ -77,7 +77,12 @@
 - 后续：待修复／待验证事项、负责人或待认领、跟踪位置与下一步；无则写无
 ```
 
-暂无阶段复盘记录。
+### 2026-10-22：Kimi Code 底座规划调整
+
+- 覆盖范围：基准提交 `1f73be09cf2fde31f7455ee7eeb7ea8f5f9c1abf` 上的本次未提交文档修改，包括 README、OpenSpec 配置、贡献指南、本复盘记录和 `adopt-kimi-agent-foundation` 规划目录；具体文件版本见 [验证记录](openspec/changes/adopt-kimi-agent-foundation/verification.md)。
+- 核对材料与遗漏：复查本次文档差异、两份增量规格与实施任务，并核对三个本地参考仓库的源码入口和提交。当前无应用实现、PR、CI 或真实运行证据；文档检查不覆盖这些行为。
+- 结论：这是用户明确选择执行底座后的正常规划调整，未发现需要新增经验条目或升级规则的问题。已保留原有 README 贡献说明，明确未实施能力与工程待定项，参考仓库保持只读。
+- 后续：按 [实施任务](openspec/changes/adopt-kimi-agent-foundation/tasks.md) 先验证底座与工程方案，再实现工作闭环；当前任务全部未开始，能力规格不归档。
 
 ## 机制参考
 
