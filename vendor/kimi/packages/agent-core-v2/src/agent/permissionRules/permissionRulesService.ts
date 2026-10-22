@@ -1,3 +1,5 @@
+import { IConfigService } from '#/app/config/config';
+import type { PermissionConfig } from './configSection';
 import { LifecycleScope } from '#/app/scopes';
 
 import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
@@ -20,6 +22,7 @@ export class AgentPermissionRulesService implements IAgentPermissionRulesService
   declare readonly _serviceBrand: undefined;
 
   constructor(
+    @IConfigService private readonly config: IConfigService,
     @IEventDispatcher private readonly dispatcher: IEventDispatcher,
     @IAgentScopeContext private readonly scopeContext: IAgentScopeContext,
     @IAgentStateService private readonly agentState: IAgentStateService,
@@ -28,7 +31,8 @@ export class AgentPermissionRulesService implements IAgentPermissionRulesService
   }
 
   get rules(): readonly PermissionRule[] {
-    return [...this.agentState.get(permissionRulesKey).rules];
+    // Mesnier：把已解析的用户规则接入现有 policy 链，避免配置只被保存而不执行。
+    return [...this.agentState.get(permissionRulesKey).rules, ...(this.config.get<PermissionConfig>('permission')?.rules ?? [])];
   }
 
   get sessionApprovalRulePatterns(): readonly string[] {

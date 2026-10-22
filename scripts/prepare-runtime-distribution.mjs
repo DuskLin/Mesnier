@@ -14,6 +14,7 @@ const output = resolve(root, 'build/runtime');
 const staging = resolve(root, `build/.runtime-staging-${process.pid}`);
 const rootModules = join(staging, 'node_modules');
 const copied = new Map();
+const reserved = new Map();
 const versions = [];
 
 await rm(staging, { recursive: true, force: true });
@@ -45,7 +46,7 @@ async function copyDependency(name, from, parentDestination, optional = false) {
   const metadata = JSON.parse(await readFile(join(source, 'package.json'), 'utf8'));
   let destination = join(rootModules, name);
   const prior = copied.get(destination);
-  if (prior && prior !== source) destination = join(parentDestination, 'node_modules', name);
+  if ((reserved.has(name) && reserved.get(name) !== source) || (prior && prior !== source)) destination = join(parentDestination, 'node_modules', name);
   if (copied.get(destination) === source) return;
   if (copied.has(destination)) throw new Error(`分发依赖出现无法解析的版本冲突：${name}`);
   copied.set(destination, source);
@@ -73,6 +74,10 @@ async function copyDependency(name, from, parentDestination, optional = false) {
 
 try {
   await cp(resolve(root, 'packages/runtime/dist'), staging, { recursive: true });
+  // 先保留直接依赖的根槽位，避免旧版传递依赖抢占运行时指定的版本。
+  for (const name of Object.keys(runtimePackage.dependencies)) {
+    if (name !== 'node') reserved.set(name, await realpath(findPackage(name, dirname(packageFile))));
+  }
   for (const name of Object.keys(runtimePackage.dependencies).sort()) {
     if (name === 'node') continue;
     await copyDependency(name, dirname(packageFile), staging);
@@ -85,18 +90,22 @@ try {
       if (existsSync(join(source, filename))) await copyFile(join(source, filename), join(staging, 'licenses', `${name}-${filename}`));
     }
   }
-  const nodeSource = process.env['MESNIER_NODE_BINARY'] ?? runtimeRequire.resolve(process.platform === 'win32' ? 'node/bin/node.exe' : 'node/bin/node');
+  let nodeSource = process.env['MESNIER_NODE_BINARY'];
+  if (!nodeSource) {
+    try { nodeSource = runtimeRequire.resolve(process.platform === 'win32' ? 'node/bin/node.exe' : 'node/bin/node'); }
+    catch { nodeSource = process.execPath; }
+  }
   const version = execFileSync(nodeSource, ['--version'], { encoding: 'utf8' }).trim();
   if (version !== 'v24.15.0') throw new Error(`分发需要 Node v24.15.0，实际为 ${version}`);
   const nodePlatform = process.platform === 'win32' ? 'win' : process.platform;
   const nodeArch = process.platform === 'win32' && process.arch === 'ia32' ? 'x86' : process.arch;
   const nodePrefix = process.platform === 'darwin' && process.arch === 'arm64' ? 'node-bin' : 'node';
-  const nodeLicense = process.env['MESNIER_NODE_LICENSE'] ?? join(
-    dirname(runtimeRequire.resolve('node/package.json')),
-    'node_modules',
-    `${nodePrefix}-${nodePlatform}-${nodeArch}`,
-    'LICENSE',
-  );
+  let packagedNodeLicense;
+  try { packagedNodeLicense = join(dirname(runtimeRequire.resolve('node/package.json')), 'node_modules', `${nodePrefix}-${nodePlatform}-${nodeArch}`, 'LICENSE'); } catch {}
+  const nodeLicense = process.env['MESNIER_NODE_LICENSE'] ?? [
+    join(dirname(dirname(nodeSource)), 'LICENSE'), packagedNodeLicense,
+  ].find((candidate) => candidate && existsSync(candidate));
+  if (!nodeLicense) throw new Error('未找到 Node 许可证，请通过 MESNIER_NODE_LICENSE 明确指定对应的 LICENSE');
   await mkdir(join(staging, 'bin'), { recursive: true });
   const nodeTarget = join(staging, 'bin', process.platform === 'win32' ? 'node.exe' : 'node');
   await copyFile(nodeSource, nodeTarget);

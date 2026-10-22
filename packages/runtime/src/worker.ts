@@ -10,17 +10,31 @@ for (const key of Object.keys(process.env)) {
 }
 
 const secrets = new Set<string>();
+let stdoutOpen = true;
+let stderrOpen = true;
 function redact(text: string) {
   for (const secret of secrets) text = text.split(secret).join('[已隐藏凭据]');
   return text;
 }
-for (const name of ['log', 'info', 'debug', 'warn', 'error'] as const) {
-  console[name] = (...args: unknown[]) => { process.stderr.write(`${redact(format(...args))}\n`); };
+function diagnostic(message: string) {
+  if (!stderrOpen || process.stderr.destroyed) return;
+  try { process.stderr.write(message); } catch { stderrOpen = false; void stop(); }
 }
-const send = (message: unknown) => process.stdout.write(`${JSON.stringify(message, (_key, item: unknown) => typeof item === 'string' ? redact(item) : item)}\n`);
+for (const name of ['log', 'info', 'debug', 'warn', 'error'] as const) {
+  console[name] = (...args: unknown[]) => { diagnostic(`${redact(format(...args))}\n`); };
+}
+const send = (message: unknown) => {
+  if (!stdoutOpen || process.stdout.destroyed) return;
+  try { process.stdout.write(`${JSON.stringify(message, (_key, item: unknown) => typeof item === 'string' ? redact(item) : item)}\n`); }
+  catch { stdoutOpen = false; void stop(); }
+};
 const runtime = new MesnierRuntime((event) => send({ event }));
 const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
 let closing = false;
+// 宿主崩溃会同时关闭所有管道；EPIPE 不能绕过内核与工具组的停止收尾。
+process.stdout.on('error', () => { stdoutOpen = false; void stop(); });
+process.stderr.on('error', () => { stderrOpen = false; void stop(); });
+process.stdin.on('error', () => { void stop(); });
 
 lines.on('line', (line) => {
   void dispatch(line);
@@ -57,7 +71,8 @@ async function dispatch(line: string) {
     send({ id, result });
     if (request.method === 'shutdown') {
       lines.close();
-      process.stdout.write('', () => process.exit(0));
+      if (stdoutOpen && !process.stdout.destroyed) process.stdout.write('', () => process.exit(0));
+      else process.exit(0);
     }
   } catch (error) {
     send({ id, error: errorPayload(error) });
@@ -70,7 +85,7 @@ async function stop() {
   try {
     await runtime.dispose();
   } catch (error) {
-    process.stderr.write(`Mesnier Agent 关闭失败：${errorPayload(error).message}\n`);
+    diagnostic(`Mesnier Agent 关闭失败：${errorPayload(error).message}\n`);
     process.exitCode = 1;
   }
   process.exit(process.exitCode ?? 0);

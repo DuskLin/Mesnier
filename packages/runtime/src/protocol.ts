@@ -50,7 +50,9 @@ export type RuntimeEventKind =
  * tool.started: {toolCallId,name,args,display?,agentId,sessionId}；tool.result: {toolCallId,output,isError?,agentId,sessionId}。
  * approval.requested: {requestId,toolCallId,toolName,action,display}；approval.resolved: {requestId,decision}。
  * usage: {available,usage}（缺失时 usage=null）；run.*: {sessionId?,error?:{code,message}}。
- * process.started/exited: {pid,pgid?}，只报告本运行时产生的进程身份，不包含命令或环境。
+ * process.started/exited: {pid,pgid?}，exited 可附 members:{pid,pgid,born}[]，不含命令或环境。
+ * members 在实际退出回调内同步观察；born 采用 LC_ALL=C、TZ=UTC 的 ps lstart 字符串。
+ * 宿主仅可对已有 started 记录且 pgid 一致的 exited 接受成员证明，随后核对当前 born。
  * leader 退出并不证明进程组后代已全部结束；宿主须确认组消失后才能忘记 pgid。
  * 所有事件具有独立 id，宿主按 id 去重，runId 用于绑定同一次执行。
  */

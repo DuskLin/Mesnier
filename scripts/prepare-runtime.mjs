@@ -33,6 +33,8 @@ const workspacePlugin = {
   name: 'mesnier-vendored-kimi',
   enforce: 'pre',
   resolveId(source) {
+    // 桌面打包器可能在根目录安装 ajv 6；内核固定使用 runtime 依赖的 ajv 8。
+    if (/^(ajv|ajv-formats)(?:\/|$)/.test(source)) return require.resolve(source);
     const pkg = packages.find((item) => source === item.name || source.startsWith(`${item.name}/`));
     if (!pkg) return;
     const subpath = source.slice(pkg.name.length);

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { spawn, execFileSync } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { fixturePrompt, startModelServer } from '../../../tests/acceptance/fixtures/model-server.mjs';
@@ -13,13 +13,25 @@ const distribution = process.env['MESNIER_TEST_RUNTIME_ROOT'];
 const executable = distribution ? join(distribution, 'bin', process.platform === 'win32' ? 'node.exe' : 'node') : require.resolve(process.platform === 'win32' ? 'node/bin/node.exe' : 'node/bin/node');
 const workerPath = distribution ? join(distribution, 'worker.mjs') : fileURLToPath(new URL('../dist/worker.mjs', import.meta.url));
 
-async function setup(t) {
+async function setup(t, options) {
   const root = await mkdtemp(join(tmpdir(), 'mesnier-runtime-test-'));
   const profileRoot = join(root, 'profile');
   const workspace = join(root, 'work');
   await mkdir(workspace);
-  const fixture = await startModelServer();
-  const worker = spawn(executable, [workerPath], { stdio: ['pipe', 'pipe', 'pipe'], detached: process.platform !== 'win32' });
+  const userHome = join(root, 'os-home');
+  const temp = join(root, 'tmp');
+  await mkdir(userHome); await mkdir(temp);
+  const fixture = await startModelServer(options);
+  const worker = spawn(executable, [workerPath], {
+    stdio: ['pipe', 'pipe', 'pipe'], detached: process.platform !== 'win32', cwd: root,
+    env: {
+      PATH: `${dirname(executable)}${delimiter}/usr/bin${delimiter}/bin${delimiter}/usr/sbin${delimiter}/sbin`,
+      HOME: userHome, USERPROFILE: userHome, TMPDIR: temp, TMP: temp, TEMP: temp,
+      XDG_CONFIG_HOME: join(userHome, '.config'), XDG_DATA_HOME: join(userHome, '.local/share'), XDG_CACHE_HOME: join(root, 'cache'),
+      GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: join(root, 'gitconfig'),
+      SHELL: '/bin/sh', LANG: 'en_US.UTF-8', TERM: 'xterm-256color',
+    },
+  });
   const events = [];
   const replies = new Map();
   const listeners = new Set();
@@ -141,6 +153,52 @@ test('拒绝工具请求不会产生文件，重复审批不会放行', { timeou
   assert.ok(app.events.some((event) => event.kind === 'approval.resolved' && event.payload.decision === 'rejected'));
 });
 
+for (const git of [false, true]) {
+  test(`${git ? 'Git' : '非 Git'} 目录首次与恢复后的写入、编辑和命令逐次审批`, { timeout: 35000 }, async (t) => {
+    const app = await setup(t);
+    const workspace = await realpath(app.workspace);
+    if (git) execFileSync('git', ['-c', 'init.defaultBranch=main', 'init', '--quiet', workspace], {
+      env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: join(app.root, 'gitconfig') },
+    });
+    const path = join(workspace, 'manual-write.txt');
+    const approvalOrEnd = (runId) => app.waitEvent((event) => event.runId === runId && (event.kind === 'approval.requested' || /^run\./.test(event.kind)));
+    await app.run('manual-reject', { kind: 'write', path, content: '先拒绝' }, { workspace });
+    const first = await approvalOrEnd('manual-reject');
+    assert.equal(first.kind, 'approval.requested', '首次写入不能被上游 Git 自动放行策略绕过');
+    await app.rpc('approve', { runId: 'manual-reject', requestId: first.payload.requestId, decision: 'rejected' });
+    const rejected = await app.end('manual-reject');
+    await assert.rejects(readFile(path), { code: 'ENOENT' });
+    await app.run('manual-approve', { kind: 'write', path, content: '再次审批后写入' }, { workspace, sessionId: rejected.payload.sessionId });
+    const second = await approvalOrEnd('manual-approve');
+    assert.equal(second.kind, 'approval.requested', '恢复后的写入仍须单次审批');
+    await assert.rejects(readFile(path), { code: 'ENOENT' });
+    await app.rpc('approve', { runId: 'manual-approve', requestId: second.payload.requestId, decision: 'approved' });
+    const written = await app.end('manual-approve');
+    assert.equal(written.kind, 'run.completed');
+    assert.equal(await readFile(path, 'utf8'), '再次审批后写入');
+    await app.run('edit-reject', { kind: 'edit', path, oldString: '再次审批后写入', newString: '编辑已批准' }, { workspace, sessionId: written.payload.sessionId });
+    const editRejected = await approvalOrEnd('edit-reject');
+    assert.equal(editRejected.kind, 'approval.requested');
+    assert.equal(editRejected.payload.toolName, 'Edit');
+    await app.rpc('approve', { runId: 'edit-reject', requestId: editRejected.payload.requestId, decision: 'rejected' });
+    await app.end('edit-reject');
+    assert.equal(await readFile(path, 'utf8'), '再次审批后写入');
+    await app.run('edit-approve', { kind: 'edit', path, oldString: '再次审批后写入', newString: '编辑已批准' }, { workspace, sessionId: written.payload.sessionId });
+    const editApproved = await approvalOrEnd('edit-approve');
+    assert.equal(editApproved.kind, 'approval.requested');
+    assert.equal(editApproved.payload.toolName, 'Edit');
+    await app.rpc('approve', { runId: 'edit-approve', requestId: editApproved.payload.requestId, decision: 'approved' });
+    assert.equal((await app.end('edit-approve')).kind, 'run.completed');
+    assert.equal(await readFile(path, 'utf8'), '编辑已批准');
+    await app.run('safe-command', { kind: 'bash', command: 'pwd' }, { workspace, sessionId: written.payload.sessionId });
+    const bash = await approvalOrEnd('safe-command');
+    assert.equal(bash.kind, 'approval.requested');
+    assert.equal(bash.payload.toolName, 'Bash');
+    await app.rpc('approve', { runId: 'safe-command', requestId: bash.payload.requestId, decision: 'approved' });
+    assert.equal((await app.end('safe-command')).kind, 'run.completed');
+  });
+}
+
 test('取消等待中的模型流，收到停止确认后才记录取消', { timeout: 35000 }, async (t) => {
   const app = await setup(t);
   await app.run('cancel-1', { kind: 'hold' });
@@ -203,6 +261,21 @@ test('供应方错误回显凭据时事件和持久化记录仍然脱敏', { tim
     assert.ok(!(await readFile(file)).includes(Buffer.from(app.fixture.apiKey)), `错误记录包含明文凭据：${file}`);
   }
 });
+
+for (const kind of ['error', 'sse-error']) {
+  test(`带 JSON 转义的凭据在 ${kind} 中也不会进入会话`, { timeout: 35000 }, async (t) => {
+    const app = await setup(t, { apiKey: 'fixture"secret\\token' });
+    await app.run('encoded-secret', { kind, status: 401, echoCredential: true });
+    assert.equal((await app.end('encoded-secret')).kind, 'run.failed');
+    await app.rpc('shutdown');
+    await app.exit;
+    assert.ok(!JSON.stringify(app.events).includes(JSON.stringify(app.fixture.apiKey).slice(1, -1)));
+    for (const file of await filesUnder(app.profileRoot)) {
+      const content = await readFile(file, 'utf8');
+      assert.ok(!content.includes(app.fixture.apiKey) && !content.includes(JSON.stringify(app.fixture.apiKey).slice(1, -1)), `编码凭据进入记录：${file}`);
+    }
+  });
+}
 
 test('真实 Bash 工具通过批准后修改文件', { timeout: 35000 }, async (t) => {
   const app = await setup(t);
@@ -274,6 +347,45 @@ test('worker 被强制结束后，宿主可根据已报告 PGID 清理实际工�
     if (alive) await new Promise((resolve) => setTimeout(resolve, 10));
   }
   assert.equal(alive, false, '已记录的工具进程组应确认全部退出');
+});
+
+test('Bash leader 退出时同步报告同组后台后代身份', { timeout: 35000 }, async (t) => {
+  const app = await setup(t);
+  await app.run('background-child', { kind: 'bash', command: 'sleep 30 >/dev/null 2>&1 & echo $! > descendant.pid' });
+  const approval = await app.waitEvent((event) => event.kind === 'approval.requested');
+  await app.rpc('approve', { runId: 'background-child', requestId: approval.payload.requestId, decision: 'approved' });
+  let descendant;
+  for (let attempt = 0; attempt < 300 && !descendant; attempt++) {
+    try { descendant = Number((await readFile(join(app.workspace, 'descendant.pid'), 'utf8')).trim()); } catch {}
+    if (!descendant) await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.ok(descendant > 0, '后台命令也必须先进入工作目录再产生文件');
+  const observed = await app.waitEvent((event) => event.kind === 'process.exited' && Array.isArray(event.payload.members) && event.payload.members.some((item) => item.pid === descendant));
+  const pgid = observed.payload.pgid;
+  t.after(() => { try { process.kill(-pgid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; } });
+  const member = observed.payload.members.find((item) => item.pid === descendant);
+  assert.ok(member && member.pgid === pgid && typeof member.born === 'string');
+  assert.doesNotThrow(() => process.kill(descendant, 0));
+  process.kill(-pgid, 'SIGTERM');
+  assert.equal((await app.end('background-child')).kind, 'run.completed');
+});
+
+test('父端所有管道断开时继续收尾，清理忽略 TERM 的真实 Bash', { timeout: 35000 }, async (t) => {
+  const app = await setup(t);
+  await app.run('pipes-closed', { kind: 'bash', command: "trap '' TERM; echo $$ > pipe-process.pid; while :; do printf 'active\\n'; sleep 0.05; done" });
+  const approval = await app.waitEvent((event) => event.kind === 'approval.requested');
+  await app.rpc('approve', { runId: 'pipes-closed', requestId: approval.payload.requestId, decision: 'approved' });
+  let pid;
+  for (let attempt = 0; attempt < 300 && !pid; attempt++) {
+    try { pid = Number((await readFile(join(app.workspace, 'pipe-process.pid'), 'utf8')).trim()); } catch {}
+    if (!pid) await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  const owned = app.events.find((event) => event.kind === 'process.started' && event.payload.pid === pid);
+  assert.equal(owned?.payload.pgid, pid);
+  t.after(() => { try { process.kill(-pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; } });
+  app.worker.stdin.destroy(); app.worker.stdout.destroy(); app.worker.stderr.destroy();
+  assert.equal((await app.exit).code, 0, '不能因未捕获 EPIPE 提前结束 worker');
+  assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
 });
 
 async function filesUnder(root) {

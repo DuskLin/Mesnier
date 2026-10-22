@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { access, chmod, mkdir, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
@@ -24,6 +25,7 @@ interface ActiveRun {
   cancelRequested: boolean;
   finish: Promise<void>;
   approvals: Map<string, (value: ApprovalResponse) => void>;
+  processGroups: Map<number, number | undefined>;
 }
 
 export class RuntimeError extends Error {
@@ -63,6 +65,7 @@ export class MesnierRuntime {
       cancelRequested: false,
       finish: Promise.resolve(),
       approvals: new Map(),
+      processGroups: new Map(),
     };
     this.seen.add(input.runId);
     this.active = run;
@@ -119,6 +122,25 @@ export class MesnierRuntime {
     run.approvals.clear();
   }
 
+  private observeProcess(run: ActiveRun, event: { kind: 'started' | 'exited'; pid: number; pgid?: number }) {
+    const { kind, ...identity } = event;
+    if (kind === 'started') run.processGroups.set(event.pid, event.pgid);
+    let members: Array<{ pid: number; pgid: number; born: string }> | undefined;
+    if (kind === 'exited' && event.pgid && run.processGroups.get(event.pid) === event.pgid && process.platform !== 'win32') {
+      try {
+        // 在实际子进程退出回调内采集，同步保留 leader 退出后的同组成员归属。
+        members = execFileSync('/bin/ps', ['-axo', 'pid=,pgid=,stat=,lstart='], {
+          encoding: 'utf8', timeout: 1000, env: { ...process.env, LC_ALL: 'C', LANG: 'C', TZ: 'UTC' },
+        }).split('\n').flatMap((line) => {
+          const match = line.match(/^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.+?)\s*$/);
+          return match && Number(match[2]) === event.pgid && !match[3]!.startsWith('Z')
+            ? [{ pid: Number(match[1]), pgid: Number(match[2]), born: match[4]! }] : [];
+        });
+      } catch { /* 采集失败不猜测归属，宿主保持待核对边界。 */ }
+    }
+    this.emit(run, `process.${kind}`, { ...identity, ...(members ? { members } : {}) });
+  }
+
   private async execute(run: ActiveRun) {
     let outcome: 'completed' | 'failed' | 'cancelled' = 'failed';
     let failure: { code: string; message: string } | undefined;
@@ -147,6 +169,9 @@ export class MesnierRuntime {
         defaultProvider: 'mesnier',
         defaultModel: 'mesnier',
         defaultPermissionMode: input.approvalMode === 'auto' ? 'yolo' : 'manual',
+        permission: { rules: input.approvalMode === 'manual'
+          ? ['Write', 'Edit', 'Bash'].map((pattern) => ({ decision: 'ask', scope: 'user', pattern }))
+          : [] },
         providers: { mesnier: {
           type: input.modelConfig.provider,
           baseUrl: input.modelConfig.baseUrl,
@@ -158,7 +183,7 @@ export class MesnierRuntime {
           maxContextSize: input.modelConfig.maxContextSize ?? 128000,
         } },
         modelCatalog: { refreshOnStart: false, refreshIntervalMs: 0 },
-        loopControl: { maxStepsPerTurn: 100, maxRetriesPerStep: 2 },
+        loopControl: { maxStepsPerTurn: 100, maxAttemptsPerStep: 2 },
         background: { keepAliveOnExit: false },
       };
       const pendingPath = `${configPath}.${process.pid}.tmp`;
@@ -170,7 +195,7 @@ export class MesnierRuntime {
         env: { ...process.env, [CREDENTIAL_ENV]: input.modelConfig.apiKey || 'not-required' },
         configPath,
         displayName: 'Mesnier Agent',
-        processObserver: ({ kind, ...identity }) => this.emit(run, `process.${kind}`, identity),
+        processObserver: (event) => this.observeProcess(run, event),
         identity: { productName: 'Mesnier-Agent', version: RUNTIME_VERSION, platform: 'mesnier_desktop' },
         skillDirs: [join(homeDir, 'skills')],
         telemetry: { track() {} },
@@ -288,17 +313,41 @@ function redact(value: Record<string, unknown>, apiKey: string): Record<string, 
 function guardProviderErrors(apiKey: string): () => void {
   const originalFetch = globalThis.fetch;
   if (!apiKey) return () => {};
-  // 在错误进入内核会话持久化之前脱敏，避免只清理 UI 而遗漏 wire.jsonl。
-  const clean = (text: string) => text.split(apiKey).join('[已隐藏凭据]');
+  // 在 HTTP / SSE 错误进入内核会话持久化之前脱敏，同时覆盖 JSON 转义形式。
+  const forms = new Set([apiKey, encodeURIComponent(apiKey)]);
+  let escaped = apiKey;
+  for (let depth = 0; depth < 3; depth++) { escaped = JSON.stringify(escaped).slice(1, -1); forms.add(escaped); }
+  const needles = [...forms].sort((left, right) => right.length - left.length);
+  const clean = (text: string) => {
+    for (const needle of needles) text = text.split(needle).join('[已隐藏凭据]');
+    return text;
+  };
   globalThis.fetch = async (...args) => {
     const response = await originalFetch(...args);
-    if (response.ok) return response;
+    const contentType = response.headers.get('content-type') ?? '';
+    const streaming = contentType.includes('text/event-stream');
+    if (response.ok && !streaming && !contentType.includes('json')) return response;
     const headers = new Headers();
     response.headers.forEach((value, key) => {
       if (!['content-length', 'content-encoding', 'transfer-encoding'].includes(key)) headers.set(key, clean(value));
     });
-    const text = clean(await response.text());
-    return new Response(response.status === 304 ? null : text, {
+    let body: BodyInit | null;
+    if (streaming && response.body) {
+      let pending = '';
+      const redactor = new TransformStream<string, string>({
+        transform(chunk, controller) {
+          pending += chunk;
+          let end;
+          while ((end = pending.indexOf('\n')) >= 0) {
+            controller.enqueue(clean(pending.slice(0, end + 1)));
+            pending = pending.slice(end + 1);
+          }
+        },
+        flush(controller) { if (pending) controller.enqueue(clean(pending)); },
+      });
+      body = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(redactor).pipeThrough(new TextEncoderStream());
+    } else body = response.status === 304 ? null : clean(await response.text());
+    return new Response(body, {
       status: response.status,
       statusText: clean(response.statusText),
       headers,

@@ -1,7 +1,15 @@
 {
+  "packages/agent-core-v2/src/agent/permissionRules/permissionRulesService.ts": {
+    "upstreamSha256": "99d5c3a018c77648f23658810a1e73475312cd9b1ccdcce4110d4cb866c230ae",
+    "patchedSha256": "d584d47ceaa9944bc2a927b9872696ac009e5c5a9f78c756c1ee396047147884"
+  },
   "packages/agent-core-v2/src/agent/profile/context.ts": {
     "upstreamSha256": "e8014943accc5ab7c6b05a3c5d5f5d54398489491ea6680df08f2837fd3d6337",
     "patchedSha256": "58ce04f2f6615ea06712fc23c3f41e9d8cbe2da10829506a96d71892c9649cbc"
+  },
+  "packages/agent-core-v2/src/agent/tools/os/bash/bashTool.ts": {
+    "upstreamSha256": "1c7e9936d0f5fd01f62474b6a20553f673361b454df774a1cffd7a8077ddcc11",
+    "patchedSha256": "f2ce454b77821221d21f9565998c7b4e2596be00a9748ae2e43057c2674baa4e"
   },
   "packages/agent-core-v2/src/app/auth/authService.ts": {
     "upstreamSha256": "d5b564fac65ff4f55c169f0dbb5c69569d7bd15df1a1b0e379bfe9874e07e68b",

@@ -161,7 +161,7 @@ export class BashTool implements IBashTool {
     command: string,
   ): Promise<IHostProcess> {
     const shellCwd = getShellPathBridge(env).toShellPath(effectiveCwd);
-    const shellCommand = `cd ${shellQuote(shellCwd)} && ${command}`;
+    const shellCommand = `cd ${shellQuote(shellCwd)} || exit $?\n${command}`;
     const noninteractiveEnv: Record<string, string> = {
       NO_COLOR: '1',
       TERM: 'dumb',

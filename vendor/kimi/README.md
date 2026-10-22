@@ -17,6 +17,8 @@ Mesnier 从 `https://github.com/MoonshotAI/kimi-code` 的固定提交 `44cdf8f40
 3. 核心的项目品牌目录和缺省品牌目录从 `.kimi-code` 改为 `.mesnier`，包括项目配置、指令、Agent、Skills、MCP、文件监视排除和 ripgrep 回退目录。项目显式的通用 `AGENTS.md` 仍可使用；不会自动信任项目 MCP。
 4. 模型目录与认证就绪检查使用 bootstrap 的私有环境读取 API key 引用，避免把模型凭据放进可被 Bash、PTY、MCP 或插件子进程继承的 `process.env`。
 5. bootstrap 增加可选进程观察回调，在 `HostProcessService` 和 `HostTerminalService` 两个实际创建入口报告 PID / PGID 及退出，不传输命令和环境。宿主据此清理 worker 之外的工具进程组。
+6. 权限规则服务合并已解析的用户 `permission.rules` 与原有运行时规则，补齐上游 v2 只解析配置却未接入规则服务的缺口。Mesnier 通过配置要求 Write / Edit / Bash 单次审批，继续使用原有 policy 优先级。
+7. Bash 的工作目录前置使用独立 `cd ... || exit $?` 行，避免用户命令含 `&` 时把 `cd` 一起放入后台，导致后续命令在错误目录产生文件。
 
 不改模型请求、工具循环、权限判定、会话持久化与取消机制。认证、循环能力与平台兼容仍需按实际执行验证；补丁中的路径隔离不是操作系统沙箱，得到授权的本地工具仍可访问工作机器。
 

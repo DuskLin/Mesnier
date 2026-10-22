@@ -6,6 +6,8 @@
 
 安装根工作区依赖后执行 `node scripts/prepare-runtime.mjs`，生成可直接随应用分发的 `build/runtime/`（Node 实体二进制、入口、分块、独立依赖闭包、许可证和来源）。`--bundle-only` 只构建源码分块，`--verify-sources` 只校验来源。源码构建入口是 `packages/runtime/dist/worker.mjs`；`sdk.mjs` 供隔离验收直接加载真实 SDK，`engine.mjs` 提供运行时实现。所有分块和公共依赖须一起分发。
 
+分发优先复制 npm `node` 包提供的二进制；包的安装脚本尚未完成时，可复制当前构建进程的 Node。两条路径都必须实际报告 `v24.15.0` 且能找到对应许可证，才允许打包。也可通过 `MESNIER_NODE_BINARY` / `MESNIER_NODE_LICENSE` 显式指定。最终目录始终包含实体文件，安装后的应用不依赖系统 Node。
+
 [src/protocol.ts](src/protocol.ts) 是宿主的协议入口：每行一个请求 `{id,method,params}`，响应为 `{id,result}` 或 `{id,error:{code,message}}`，事件为 `{event:{id,runId,kind,at,payload}}`。标准输出只用于协议，其他诊断写标准错误。
 
 方法包括 `info`、`run`、`approve`、`cancel`、`shutdown`。`run` 返回接收确认，最终状态由 `run.completed`、`run.failed`、`run.cancelled` 表示，接收确认不代表模型已完成。一个 worker 只运行一个活动任务；重复的 `runId` 在该 worker 生命周期内拒绝，宿主仍须持久化去重。
@@ -16,9 +18,9 @@
 
 宿主传 `profileRoot`（正式应用为 `~/.mesnier`，测试为临时专属目录）；SDK 使用其 `agent/` 子目录保存配置、会话、缓存、日志等。`osHomeDir` 和显式 Skills 目录也指向该隔离范围。运行时不会默认导入现有 Kimi 配置、账号或会话。
 
-模型协议入口支持 OpenAI Chat Completions、OpenAI Responses 和 Anthropic；这是接入接口，不代表所有供应方已经验证兼容。`apiKey` 只从 stdin 进入独立进程的 bootstrap 私有内存，`config.toml` 只保存 `MESNIER_RUNTIME_API_KEY` 引用，`process.env` 不保存该值，因此工具进程不会继承；宿主历史配置不得包含密钥值。运行时在供应方 HTTP 错误进入内核之前脱敏，并关闭可能含原始错误的上游诊断日志，只向产品转发经过当前密钥脱敏的结构化事件。真实密钥不应出现在普通日志、配置快照或截图中。
+模型协议入口支持 OpenAI Chat Completions、OpenAI Responses 和 Anthropic；这是接入接口，不代表所有供应方已经验证兼容。`apiKey` 只从 stdin 进入独立进程的 bootstrap 私有内存，`config.toml` 只保存 `MESNIER_RUNTIME_API_KEY` 引用，`process.env` 不保存该值，因此工具进程不会继承；宿主历史配置不得包含密钥值。运行时在供应方 HTTP / SSE 错误进入内核之前脱敏，覆盖普通、JSON 转义及 URL 编码形式，并关闭可能含原始错误的上游诊断日志，只向产品转发经过当前密钥脱敏的结构化事件。真实密钥不应出现在普通日志、配置快照或截图中。
 
-`manual` 使用内核手动权限；`auto` 明确启用内核 yolo 模式。审批只接受当前运行中未处理的请求，批准/拒绝只对该次请求生效。取消确认来自内核回合结束；已经写入的文件不会因取消自动回滚。内核关闭失败会以失败结果上报，不保留先前的成功结果。
+`manual` 对 Write / Edit / Bash 配置显式 ask 规则，每次写文件、编辑和命令执行均须单独审批，覆盖 Git 与非 Git 目录和会话恢复；读取按内核默认规则处理。这样不会继承上游 manual 模式中 Git 目录写入自动放行的策略。`auto` 明确启用内核 yolo 模式。审批只接受当前运行中未处理的请求，批准/拒绝只对该次请求生效。取消确认来自内核回合结束；已经写入的文件不会因取消自动回滚。内核关闭失败会以失败结果上报，不保留先前的成功结果。
 
 ## 进程边界
 
