@@ -1,5 +1,5 @@
 import { build } from 'electron-builder';
-import { mkdir, access } from 'node:fs/promises';
+import { mkdir, access, cp } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { verifyPackagedRuntime } from './verify-packaged-runtime.mjs';
@@ -21,6 +21,11 @@ if (converted.status) throw new Error(converted.stderr);
 process.env.CSC_IDENTITY_AUTO_DISCOVERY = 'false';
 await build({ config: {
   electronDist: path.resolve('node_modules/electron/dist'), electronVersion: '41.0.3',
-  // electron-builder 默认忽略映射根下的 node_modules；签名前按完整来源核对，防止仓库祖先依赖掩盖缺包。
-  afterPack: async context => verifyPackagedRuntime(path.resolve('build/runtime'), path.join(context.appOutDir, 'Mesnier.app/Contents/Resources/runtime')),
+  // 默认资源复制器会过滤 node_modules 和部分点文件；完整复制已解析闭包，再逐文件核对。
+  afterPack: async context => {
+    const source = path.resolve('build/runtime');
+    const destination = path.join(context.appOutDir, 'Mesnier.app/Contents/Resources/runtime');
+    await cp(source, destination, { recursive: true, dereference: true });
+    await verifyPackagedRuntime(source, destination);
+  },
 }, publish: 'never' });

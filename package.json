@@ -58,15 +58,6 @@
     ],
     "extraResources": [
       {
-        "from": "build/runtime",
-        "to": "runtime"
-      },
-      {
-        "from": "build/runtime/node_modules",
-        "to": "runtime/node_modules",
-        "filter": ["**/*"]
-      },
-      {
         "from": "vendor/kimi/LICENSE",
         "to": "licenses/Kimi-Code-MIT.txt"
       },
