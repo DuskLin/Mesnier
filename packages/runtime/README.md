@@ -16,7 +16,7 @@
 
 ## 数据、认证和权限
 
-宿主传 `profileRoot`（正式应用为 `~/.mesnier`，测试为临时专属目录）；SDK 使用其 `agent/` 子目录保存配置、会话、缓存、日志等。`osHomeDir` 和显式 Skills 目录也指向该隔离范围。运行时不会默认导入现有 Kimi 配置、账号或会话。
+宿主传 `profileRoot`（正式应用为 `~/.mesnier/runtime`，测试为临时专属目录）；SDK 使用其 `agent/` 子目录保存配置、会话、缓存、日志等。`osHomeDir` 和显式 Skills 目录也指向该隔离范围。运行时不会默认导入现有 Kimi 配置、账号或会话。
 
 模型协议入口支持 OpenAI Chat Completions、OpenAI Responses 和 Anthropic；这是接入接口，不代表所有供应方已经验证兼容。`apiKey` 只从 stdin 进入独立进程的 bootstrap 私有内存，`config.toml` 只保存 `MESNIER_RUNTIME_API_KEY` 引用，`process.env` 不保存该值，因此工具进程不会继承；宿主历史配置不得包含密钥值。运行时在供应方 HTTP / SSE 错误进入内核之前脱敏，覆盖普通、JSON 转义及 URL 编码形式，并关闭可能含原始错误的上游诊断日志，只向产品转发经过当前密钥脱敏的结构化事件。真实密钥不应出现在普通日志、配置快照或截图中。
 

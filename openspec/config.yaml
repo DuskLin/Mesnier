@@ -2,9 +2,9 @@ schema: spec-driven
 
 context: |
   Mesnier 是面向 Work 与 Coding 的通用 Agent 工作台，将对话模式与任务看板连接起来。
-  项目处于桌面成品实施阶段，实际交付状态以 README、任务清单与验证证据为准。
+  项目已完成首个 macOS 桌面版本的本机安装与功能验收，源码合并状态及实际覆盖范围以 README、任务和证据为准。
   已确定以新版 TypeScript Kimi Code（MoonshotAI/kimi-code）的源码作为 Agent 底座二次开发，由应用内置和管理派生运行时。
-  正在仓内受控纳入 Kimi Code 必要源码；未完成实际验证的能力不得表述为已交付。
+  已仓内受控纳入 Kimi Code 必要源码并记录19份必要派生补丁；未完成实际验证的能力不得表述为已交付。
   采用 Electron + React + TypeScript 桌面端、独立 Node 24 子进程、JSONL RPC 与版本化原子 JSON 产品状态；内核保留原生会话。
   本次交付当前 macOS 可安装、双击启动的 Mesnier；Windows、Linux、远程主机与 Web 入口留待后续扩展。应用数据默认 ~/.mesnier，测试使用独立根。
   Kimi Code 是执行内核的源码基础，ZCode 是功能和交互参考，Multica 是看板和任务组织参考；不整体继承后两者的运行时与服务架构。

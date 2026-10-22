@@ -9,11 +9,11 @@
 
 Mesnier 希望将对话式 Agent 与任务看板放进同一个 APP：你可以直接与 Agent 交流、共同完成工作，也可以把目标交给看板上的 Agent 持续推进，并随时切换视图，接着同一份上下文继续工作。
 
-Mesnier 计划以新版 [Kimi Code](https://github.com/MoonshotAI/kimi-code) 的 TypeScript 源码作为 Agent 底座二次开发，提供由应用内置和管理的 Agent 运行时。产品功能与交互参考 [ZCode](https://github.com/zai-org/ZCode)，看板与任务组织参考 [Multica](https://github.com/multica-ai/multica)。
+Mesnier 以新版 [Kimi Code](https://github.com/MoonshotAI/kimi-code) 的 TypeScript 源码作为 Agent 底座二次开发，提供由应用内置和管理的 Agent 运行时。产品功能与交互参考 [ZCode](https://github.com/zai-org/ZCode)，看板与任务组织参考 [Multica](https://github.com/multica-ai/multica)。
 
-应用负责工作空间、对话、看板、任务编排、验收与产物管理；派生内核复用并按需扩展 Kimi Code 的模型调用、工具循环、上下文、权限交互和会话能力。首版目标是不要求用户预装 Agent CLI，在应用内完成模型配置后开始工作。
+应用负责工作空间、对话、看板、任务编排、验收与产物管理；派生内核复用并按需扩展 Kimi Code 的模型调用、工具循环、上下文、权限交互和会话能力。首版不要求用户预装 Agent CLI，在应用内完成模型配置后开始工作。
 
-> **项目状态：桌面成品实施中，尚未完成发行验收。** 当前正在按 [交付目标](docs/goals/mesnier-app.md) 建设 macOS 应用，运行时、工作台与独立验收分别在专属工作区推进。以下功能、平台和兼容性均为建设目标，不代表已经实现或验证通过。当前变更见 [采用 Kimi Code Agent 底座](openspec/changes/adopt-kimi-agent-foundation/proposal.md)。
+> **项目状态：Mesnier 0.1.0 已完成当前 Mac 的安装与功能验收。** 已按 [交付目标](docs/goals/mesnier-app.md) 实现内置运行时、工作台和本地闭环，实际证据见 [发行验收](docs/verification/release-0.1.0.md)。源码 PR 的 main 合并受仓库规则阻止；未实现的平台与扩展仍保留为路线图。首版变更归档见 [采用 Kimi Code Agent 底座](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/proposal.md)。
 
 ## 为什么做 Mesnier
 
@@ -34,20 +34,20 @@ Mesnier 将这两种方式连接起来，让工作从一次对话自然发展成
 围绕当前目标与 Agent 持续交流，适合探索、即时协作与交互式执行。
 
 - 选择项目、工作目录、Agent 配置和可用模型，发起或继续会话。
-- 添加文件与任务背景，查看流式回复、工具调用和执行日志。
+- 在消息中提供文件路径与任务背景，查看流式回复、工具调用和执行日志。
 - 补充指令、处理权限请求、中止或继续执行；尚未支持的控制操作明确提示。
 - 在同一个工作界面查看生成的文档、文件和代码变更。
 - 将需要持续跟踪的对话关联到看板任务，保留原有记录。
 
 ### 看板模式 · Board
 
-围绕目标与交付物组织工作，适合异步执行、多个任务并行与阶段验收。
+围绕目标与交付物组织工作，适合多任务排队与阶段验收。
 
 - 创建任务，描述目标、上下文、交付物和验收标准。
 - 为任务指定 Agent 配置与工作目录，按队列调度执行。
 - 通过「待办 → 进行中 → 待验收 → 已完成」跟踪进度；单独标记阻塞、失败和取消。
 - 从任务卡片查看关联对话、执行历史、待处理请求和产物。
-- 参考 Multica 的状态分列、卡片摘要、Agent 指派、筛选与详情查看；拖拽状态遵守执行和验收规则，启动、取消与验收提供明确操作。
+- 参考 Multica 的状态分列、卡片摘要、Agent 指派、筛选与详情查看；当前不开放任意拖动状态，启动、取消与验收提供明确操作。
 - 首版采用串行队列；后续在能力与资源允许时并行执行独立任务，完成后由用户验收。
 
 ### 自由切换的含义
@@ -80,10 +80,10 @@ Work 任务不要求绑定 Git 仓库。Coding 任务可以关联仓库，并在
 
 ### 已确定的分工
 
-| 层次 | 规划职责 |
+| 层次 | 当前职责 |
 | --- | --- |
 | Mesnier 产品层 | 工作空间、Chat / Board、任务、调度、验收、交付物与用户设置 |
-| Mesnier 集成层 | 管理派生运行时和版本，将会话、流式事件、权限、追加指令、取消与恢复接入产品 |
+| Mesnier 集成层 | 管理派生运行时和版本，接入会话、流式事件、权限、取消与恢复；新指令待当前回合结束后提交 |
 | Kimi Code 派生内核 | 复用并按需扩展执行循环、上下文、模型适配、工具调用、权限与会话机制 |
 | 模型与工具 | 按配置访问模型服务、本地文件和命令，以及后续接入的 MCP、Skills 和专用工具 |
 
@@ -93,7 +93,7 @@ Work 任务不要求绑定 Git 仓库。Coding 任务可以关联仓库，并在
 
 ### 应用管理运行时与模型配置
 
-目标流程：**安装 Mesnier → 初始化内置运行时 → 配置模型服务并完成认证 → 验证可用 → 选择目录开始工作**。
+使用流程：**安装 Mesnier → 打开设置与模型 → 添加服务地址、模型名称和密钥（本地服务可留空）→ 保存并验证 → 选择目录开始工作**。
 
 - **运行时准备**：由应用检查和管理派生运行时，缺少系统依赖时给出明确指引，不要求先手动安装其他 Agent CLI。
 - **模型配置**：配置服务、模型和凭据，区分未配置、待认证、可用与异常；上游官方账号或订阅的适用范围需单独确认。
@@ -126,14 +126,14 @@ flowchart TB
 
 ### 01 · 底座接入与最小工作闭环
 
-- [ ] 固定 Kimi Code 上游基线，确定源码集成、许可证保留、构建与应用分发方式。
-- [ ] 使用隔离配置验证模型调用、工具执行、权限拒绝、取消和会话恢复，确定工程方案。
-- [ ] 工作空间、项目与本地目录管理。
-- [ ] 内置派生运行时、模型配置及认证引导。
-- [ ] 对话执行、流式事件、权限交互与产物记录。
-- [ ] 基础看板与任务生命周期。
-- [ ] 同一任务在对话和看板间切换，保持执行与上下文关联。
-- [ ] 本地持久化，以及重启后的历史读取和执行状态核对。
+- [x] 固定 Kimi Code 上游基线，确定源码集成、许可证保留、构建与应用分发方式。
+- [x] 使用隔离配置验证模型调用、工具执行、权限拒绝、取消和会话恢复，确定工程方案。
+- [x] 工作空间、项目与本地目录管理。
+- [x] 内置派生运行时、模型配置及认证引导。
+- [x] 对话执行、流式事件、权限交互与产物记录。
+- [x] 基础看板与任务生命周期。
+- [x] 同一任务在对话和看板间切换，保持执行与上下文关联。
+- [x] 本地持久化，以及重启后的历史读取和执行状态核对。
 
 ### 02 · 完善 Work 与 Coding 体验
 
@@ -151,44 +151,46 @@ flowchart TB
 
 首个可用版本的验收目标：在未预装 Agent CLI 的环境中，通过 Mesnier 配置模型并启动内置运行时；分别完成一个普通目录中的 Work 文件任务和一个 Coding 修改任务。对话可关联为看板任务，切换视图保持同一执行、权限请求和产物关系；执行结束后由用户验收。权限拒绝、取消、失败及应用重启后的状态核对均需有验证记录。
 
-第一阶段的拟实施范围见 [OpenSpec 提案](openspec/changes/adopt-kimi-agent-foundation/proposal.md)、[设计](openspec/changes/adopt-kimi-agent-foundation/design.md) 和 [任务](openspec/changes/adopt-kimi-agent-foundation/tasks.md)。后续阶段仍是路线图，不自动纳入本次变更。
+第一阶段的范围与验收记录见 [OpenSpec 提案](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/proposal.md)、[设计](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/design.md) 和 [任务](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/tasks.md)。后续阶段仍是路线图，不自动纳入本次变更。
 
 ## 当前仓库
 
 ```text
 Mesnier/
-├── AGENTS.md                  # 项目协作约定
-├── CONTRIBUTING.md            # 贡献流程与 PR 提交前检查
-├── LESSONS.md                 # 反复修改与 bug 修复的经验记录
-├── README.md
-├── .github/
-│   └── PULL_REQUEST_TEMPLATE.md # PR 说明与检查清单模板
-├── .agents/skills/            # OpenSpec 生成的 Codex 技能
-├── openspec/
-│   ├── config.yaml            # 项目上下文与规格编写规则
-│   ├── specs/                 # 归档后的能力规格（当前为空）
-│   └── changes/
-│       └── adopt-kimi-agent-foundation/ # 底座与首个工作闭环的规划，尚未实施
-└── assets/
-    └── brand/
-        ├── mesnier-logo.png    # 透明背景的初版 Logo
-        └── logo-prompt.txt     # Logo 生成方式与提示词
+├── apps/desktop/             # Electron 宿主、有限 IPC 桥和 React 工作台
+├── packages/shared/          # 产品记录与界面契约
+├── packages/runtime/         # Mesnier Agent 封装、RPC 和真实内核测试
+├── vendor/kimi/              # 固定上游源码、MIT 许可、完整派生补丁
+├── scripts/                  # 构建、运行时分发和 macOS 打包
+├── tests/                    # 宿主、验收与旧缺陷回归
+├── docs/                     # 交付目标、使用说明和版本绑定证据
+├── openspec/                 # 实施变更与归档后的能力规格
+└── assets/brand/             # Mesnier Logo 和来源
 ```
 
-已建立 Electron + React + TypeScript 工程。当前开发环境使用 Node.js 24.15.0，按锁文件安装依赖：
+开发和构建需要 Node.js **24.15.0**，按根锁文件安装依赖：
 
 ```bash
 npm ci
 npm run typecheck
 npm test
-npm run build:app
-# 测试使用独立数据目录，不使用真实 ~/.mesnier。
-MESNIER_HOME=/绝对路径/测试数据 npm start
+npm run test:probe
+npm run test:mutations
+npm run build
+npm run test:runtime
+# 测试数据与真实 ~/.mesnier 分开。
+MESNIER_HOME=/绝对路径/独立测试数据 npm start
+# 当前只交付 macOS Apple Silicon 的 DMG 和 ZIP。
+npm run package
 ```
 
-`build:app` 构建桌面宿主与静态界面；完整运行依赖 `build/runtime` 内置运行时分发目录。完整构建、安装包与端到端验收正在本次 OpenSpec 变更中完成，尚不能仅凭界面启动认定成品已交付。阶段证据见 [桌面宿主验证](docs/verification/desktop-host-2026-10-22.md)。
+`build:app` 构建静态界面与宿主，`build:runtime` 构建真实 Kimi harness 和独立 Node 分发，`build` 执行两者。安装后的应用直接使用包内资源，不需要开发服务器、系统 Node 或独立 Kimi CLI。文件工具可调用系统 shell 和项目自身依赖；未安装的项目工具按实际错误显示。
 
-Logo 以字母 **M** 为主体，将对话气泡与看板卡片融入同一个折叠形态，表达两种工作模式的连接。当前素材为 PNG，平台应用图标与其他品牌变体待后续补齐。
+已执行真实 Electron 交互、受控模型协议下的真实 harness、以及本地 Qwen 模型的 Work / Coding 文件任务。受控协议测试与真实推理分别记录，更多商业模型、Windows / Linux、远程执行与 Office 产物仍未验收。DMG 安装、系统启动及安装版真实模型界面任务均通过；以 [发行验收](docs/verification/release-0.1.0.md) 的版本和文件哈希为准。
+
+首次使用见 [使用说明](docs/使用说明.md)。模型接口提供 OpenAI Chat Completions、OpenAI Responses 和 Anthropic 三种入口；当前真实模型实测为本地 Qwen 的 OpenAI Chat Completions 协议，其他服务需用自己的配置测试。
+
+Logo 是项目已有的透明 PNG，已生成 macOS ICNS 图标。素材来源见 `assets/brand/logo-prompt.txt`；上游代码与分发许可见 [第三方内容说明](THIRD_PARTY_NOTICES.md)。
 
 ## OpenSpec 协作流程
 
@@ -217,13 +219,13 @@ openspec list --specs
 openspec validate --all --strict --no-interactive
 ```
 
-当前有 `adopt-kimi-agent-foundation` 规划变更，`openspec/specs/` 仍为空。严格验证用于检查该变更的规格结构与一致性，不代表应用功能通过验收；能力在实施、验证并归档后才进入 `openspec/specs/`。升级 CLI 后运行 `openspec update`，并检查生成文件的差异。
+`adopt-kimi-agent-foundation` 已归档到 `openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/`，两份已实现能力规格位于 `openspec/specs/`。严格验证检查规格结构与一致性；应用功能结果另见发行证据。升级 CLI 后运行 `openspec update`，并检查生成文件的差异。
 
 ## 参与贡献与 PR 检查
 
 提交前请阅读 [贡献指南](CONTRIBUTING.md)，按变更影响选择检查，并使用 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md) 记录问题、修改内容、验证证据、风险与未覆盖项。Agent 同时遵循 [协作约定](AGENTS.md)。
 
-当前可执行类型检查、宿主测试、桌面构建、Git 差异、文档链接与引用检查，以及 OpenSpec 验证；尚未配置 CI 工作流。模板中的条件项需说明不适用原因，不将静态检查或空规格验证表述为真实功能验证通过。
+当前可执行类型检查、宿主与运行时测试、探针及负向回归、桌面/运行时构建、macOS 打包、Git 差异、文档链接与 OpenSpec 验证；尚未配置 CI 工作流。模板中的条件项需说明不适用原因，不将静态检查或空规格验证表述为真实功能验证通过。
 
 ## 底座与参考来源
 
@@ -233,4 +235,4 @@ openspec validate --all --strict --no-interactive
 | [ZCode](https://github.com/zai-org/ZCode) | 功能与交互参考：会话、工具事件、权限交互和工作产物 | `/Users/liujialin/project/ZCode` |
 | [Multica](https://github.com/multica-ai/multica) | 看板设计参考：状态分列、卡片、Agent 指派与执行历史 | `/Users/liujialin/project/multica` |
 
-本地目录只用于研究，不是 Mesnier 的绝对路径构建依赖；参考快照与具体入口见 [设计依据](openspec/changes/adopt-kimi-agent-foundation/design.md)。当前尚未引入三个项目的代码。后续集成 Kimi Code 源码需保留 MIT 许可与版权声明；如复用其他项目的代码、插件或素材，按对应来源单独核对许可和依赖。Mesnier 自有代码的许可证仍待确定，不把上游官方服务、订阅权益或未公开能力视为自动获得。
+本地目录只用于研究，不是 Mesnier 的绝对路径构建依赖；参考快照与具体入口见 [设计依据](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/design.md)。已按固定提交纳入 Kimi Code 必要源码并保留 MIT 许可、版权和补丁记录。ZCode 与 Multica 用于功能和交互研究，没有复制其产品代码或素材；后续复用仍须单独核对来源和许可。Mesnier 自有代码的许可证仍待确定，不把上游官方服务、订阅权益或未公开能力视为自动获得。

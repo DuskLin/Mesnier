@@ -27,7 +27,7 @@
 
 ### P1：SDK 依赖与可重复运行入口尚未落实
 
-入口在 [probe.ts](../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 423 行按包名导入 `@moonshot-ai/kimi-code-sdk`，但探针的 [package.json](../../../../spikes/kimi-sdk-min-probe/package.json) 没有声明该依赖，当前工程也没有可解析的依赖安装。上游仓库不存在 `node_modules` 和 SDK `dist`。
+入口在 [probe.ts](../../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 423 行按包名导入 `@moonshot-ai/kimi-code-sdk`，但探针的 [package.json](../../../../../spikes/kimi-sdk-min-probe/package.json) 没有声明该依赖，当前工程也没有可解析的依赖安装。上游仓库不存在 `node_modules` 和 SDK `dist`。
 
 在独立副本中使用 Node 24.15.0，传入仅用于进入前置路径的假凭据及本机回环地址，进程实际退出 1，证据报 `Cannot find package '@moonshot-ai/kimi-code-sdk'`，六个场景仍未运行。README 的 `pnpm dlx tsx` 只提供 TypeScript 执行器；切换工作目录不会自动把另一个目录里的探针变成上游 workspace 成员，指定的 tsconfig 也没有 SDK 路径映射。
 
@@ -35,7 +35,7 @@
 
 ### P1：收尾检查失败可能仍以退出码 0 结束
 
-[probe.ts](../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 673–674 行在 `try` 内返回当前 `exitCode`；`finally` 第 687、693、698 行即使把失败码改为 1，也不会修改已经求值的返回值。第 705–706 行又用该旧返回值覆盖 `finally` 设置的 `process.exitCode`。
+[probe.ts](../../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 673–674 行在 `try` 内返回当前 `exitCode`；`finally` 第 687、693、698 行即使把失败码改为 1，也不会修改已经求值的返回值。第 705–706 行又用该旧返回值覆盖 `finally` 设置的 `process.exitCode`。
 
 本次用原 `main` 和最外层赋值代码，在真实子进程中注入“前面场景成功、结束时校验失败”，结果为：
 
@@ -47,13 +47,13 @@
 
 ### P2：顶层目录元数据不能证明已有配置文件未被修改
 
-[probe.ts](../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 223–228 行只采集目录本身的 mtime、ctime、inode 和 size，第 254–255 行据此给出“未变化／未写入”。原地改写目录中的已有文件通常不会改变这些目录属性。
+[probe.ts](../../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 223–228 行只采集目录本身的 mtime、ctime、inode 和 size，第 254–255 行据此给出“未变化／未写入”。原地改写目录中的已有文件通常不会改变这些目录属性。
 
 本次只在临时目录演示：改写其中已有的 `config.toml` 后，文件哈希发生变化，而从原函数取得的目录签名保持相同。没有读取或修改真实个人配置文件。应在专用测试目录或受控环境中核对实际文件访问和写入，或针对需要保护的文件做适当快照，不能把顶层目录签名等同于内容未变化的证据。
 
 ### P2：恢复检查会漏掉恢复期间的同内容重写
 
-[probe.ts](../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 618 行先等待 `resumeSession` 返回，之后才订阅事件；第 620–632 行只等待短时间内的新 `turn.ended` 并比较文件内容哈希。恢复调用期间已经完成的操作、未在窗口内结束的回合，以及同内容重复写入，都可能逃过检查。
+[probe.ts](../../../../../spikes/kimi-sdk-min-probe/probe.ts) 第 618 行先等待 `resumeSession` 返回，之后才订阅事件；第 620–632 行只等待短时间内的新 `turn.ended` 并比较文件内容哈希。恢复调用期间已经完成的操作、未在窗口内结束的回合，以及同内容重复写入，都可能逃过检查。
 
 本次提取原恢复判定代码，用受控替身在 `resumeSession` 返回前重写一次相同内容，探针仍给出：
 
