@@ -3,13 +3,13 @@ import { spawn, execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, delimiter, join } from 'node:path';
+import { dirname, delimiter, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { fixturePrompt, startModelServer } from '../../../tests/acceptance/fixtures/model-server.mjs';
 
 const require = createRequire(import.meta.url);
-const distribution = process.env['MESNIER_TEST_RUNTIME_ROOT'];
+const distribution = process.env['MESNIER_TEST_RUNTIME_ROOT'] ? resolve(process.env['MESNIER_TEST_RUNTIME_ROOT']) : undefined;
 const executable = distribution ? join(distribution, 'bin', process.platform === 'win32' ? 'node.exe' : 'node') : require.resolve(process.platform === 'win32' ? 'node/bin/node.exe' : 'node/bin/node');
 const workerPath = distribution ? join(distribution, 'worker.mjs') : fileURLToPath(new URL('../dist/worker.mjs', import.meta.url));
 
@@ -139,6 +139,26 @@ test('真实内核写入文件、会话恢复、重复执行拦截与凭据隔�
   for (const file of await filesUnder(app.profileRoot)) {
     assert.ok(!(await readFile(file)).includes(Buffer.from(app.fixture.apiKey)), `发现明文凭据：${file}`);
   }
+});
+
+test('用量缺失不显示为零，恢复会话也不复用上一回合的统计', { timeout: 35000 }, async (t) => {
+  const app = await setup(t);
+  const checkUsage = async (runId, usage, sessionId) => {
+    await app.run(runId, { kind: 'text', text: '核对用量', ...(usage ? { usage } : {}) }, sessionId ? { sessionId } : {});
+    const ended = await app.end(runId);
+    assert.equal(ended.kind, 'run.completed', JSON.stringify(ended));
+    return { ended, payload: app.events.find(event => event.runId === runId && event.kind === 'usage').payload };
+  };
+  const missing = await checkUsage('usage-missing');
+  assert.equal(missing.payload.available, false);
+  assert.equal(missing.payload.usage, null);
+  const zero = await checkUsage('usage-zero', { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 });
+  assert.equal(zero.payload.available, true);
+  assert.deepEqual(zero.payload.usage.currentTurn, { inputOther: 0, output: 0, inputCacheRead: 0, inputCacheCreation: 0 });
+  const supplied = await checkUsage('usage-supplied', { prompt_tokens: 17, completion_tokens: 5, total_tokens: 22, prompt_tokens_details: { cached_tokens: 3 } });
+  assert.deepEqual(supplied.payload.usage.currentTurn, { inputOther: 14, output: 5, inputCacheRead: 3, inputCacheCreation: 0 });
+  const resumed = await checkUsage('usage-resumed-missing', undefined, supplied.ended.payload.sessionId);
+  assert.equal(resumed.payload.usage?.currentTurn, undefined, '历史累计用量不能冒充当前缺失的用量');
 });
 
 test('拒绝工具请求不会产生文件，重复审批不会放行', { timeout: 35000 }, async (t) => {

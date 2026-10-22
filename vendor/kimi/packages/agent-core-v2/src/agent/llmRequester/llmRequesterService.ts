@@ -497,13 +497,14 @@ export class AgentLLMRequesterService implements IAgentLLMRequesterService {
           finishedAt: Date.now(),
         });
       }
-      void this.usage.record(
-        this.scopeContext.agentContext,
-        request.modelAlias,
-        usage ?? emptyUsage(),
-        request.source,
-      );
       if (usage !== undefined) {
+        // Mesnier 必须区分供应方未提供用量和真实零消耗。
+        void this.usage.record(
+          this.scopeContext.agentContext,
+          request.modelAlias,
+          usage,
+          request.source,
+        );
         this.tokenCounting.measured(this.scopeContext.agentContext, request.messages, [message], usage);
       }
       this.logResponse(request.logFields, usage ?? emptyUsage(), timing);

@@ -1,4 +1,8 @@
 {
+  "packages/agent-core-v2/src/agent/llmRequester/llmRequesterService.ts": {
+    "upstreamSha256": "d998b7ffa13f7f525e40c732b53b70c21e8bb779e93a1f45abaa3e45f2988dc8",
+    "patchedSha256": "014df41238fb9e87fe275d7d2f29c8a691767ad4254bfcbb434c0a38099f18ad"
+  },
   "packages/agent-core-v2/src/agent/permissionRules/permissionRulesService.ts": {
     "upstreamSha256": "99d5c3a018c77648f23658810a1e73475312cd9b1ccdcce4110d4cb866c230ae",
     "patchedSha256": "d584d47ceaa9944bc2a927b9872696ac009e5c5a9f78c756c1ee396047147884"

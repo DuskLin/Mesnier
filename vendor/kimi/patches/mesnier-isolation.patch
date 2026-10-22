@@ -379,3 +379,26 @@
    readonly identity?: KimiHostIdentity | undefined;
    readonly homeDir?: string | undefined;
    readonly configPath?: string | undefined;
+--- a/packages/agent-core-v2/src/agent/llmRequester/llmRequesterService.ts
++++ b/packages/agent-core-v2/src/agent/llmRequester/llmRequesterService.ts
+@@ -497,13 +497,14 @@
+           finishedAt: Date.now(),
+         });
+       }
+-      void this.usage.record(
+-        this.scopeContext.agentContext,
+-        request.modelAlias,
+-        usage ?? emptyUsage(),
+-        request.source,
+-      );
+       if (usage !== undefined) {
++        // Mesnier 必须区分供应方未提供用量和真实零消耗。
++        void this.usage.record(
++          this.scopeContext.agentContext,
++          request.modelAlias,
++          usage,
++          request.source,
++        );
+         this.tokenCounting.measured(this.scopeContext.agentContext, request.messages, [message], usage);
+       }
+       this.logResponse(request.logFields, usage ?? emptyUsage(), timing);
