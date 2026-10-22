@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-23",
+  "licenses": [
+    {
+      "name": "standardwebhooks",
+      "version": "1.1.1",
+      "license": "MIT",
+      "file": "standardwebhooks-1.1.1-LICENSE.txt",
+      "sha256": "5ec8c7b26b64d881a6706617bed25c049f97f2f35de034c756de8546fd6dbe27",
+      "repository": "https://github.com/standard-webhooks/standard-webhooks",
+      "commit": "b4d2c14fc5b4ccff3ff271e3b087dff812254c59",
+      "upstreamPath": "libraries/LICENSE",
+      "gitBlobSha": "55b14b3a3ce649a2f1b05428dcc9c6db95b37c04",
+      "sourceUrl": "https://github.com/standard-webhooks/standard-webhooks/blob/b4d2c14fc5b4ccff3ff271e3b087dff812254c59/libraries/LICENSE",
+      "npmIntegrity": "sha512-bCbX9ZEyFkWPsRz7Bl3NuQUJohmwGSev/yhr7vhaGPlc4AfIrspIRa6cPTBuI1ItmrTDJ4d/S2hCsfe4+vQGnQ=="
+    },
+    {
+      "name": "parse-bmfont-ascii",
+      "version": "1.0.6",
+      "license": "MIT",
+      "file": "parse-bmfont-ascii-1.0.6-LICENSE.txt",
+      "sha256": "59c38e93a395817bc9d674d868af7c062fcea8b37468af8b3f6f075133eb1756",
+      "repository": "https://github.com/mattdesl/parse-bmfont-ascii",
+      "commit": "5f22b037ae7460f629dd681db23cd9b543a76b06",
+      "upstreamPath": "LICENSE.md",
+      "gitBlobSha": "89a78cf2226fa749c97ead1de544295a53697cbc",
+      "sourceUrl": "https://github.com/mattdesl/parse-bmfont-ascii/blob/5f22b037ae7460f629dd681db23cd9b543a76b06/LICENSE.md",
+      "npmIntegrity": "sha512-U4RrVsUFCleIOBsIGYOMKjn9PavsGOXxbvYGtMOEfnId0SVNsgehXh1DxUdVPLoxd5mvcEtvmKs2Mmf0Mpa1ZA=="
+    }
+  ]
+}
