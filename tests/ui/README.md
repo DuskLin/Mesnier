@@ -45,3 +45,20 @@ node --test tests/ui/electron-acceptance.test.mjs
 失败保留截图和原因；资源收尾失败会同时把报告判为失败并使测试进程非零退出。只关闭本任务创建的 Electron 进程与本地模型服务；强杀验收仅向本次 Electron 进程发送 `SIGKILL`，核对自身运行时是否退出，发现孤立进程则清理并判为失败。保留本次隔离数据和临时工作目录供复核，后续清理只应针对报告列出的这些路径。
 
 自动化通过路径输入创建项目，没有覆盖原生目录选择器操作、Finder 窗口或发行签名、公证流程；这些检查不能从本测试通过推导。真实模型、安装包和其他平台须分别保留实际证据。运行时、主进程或界面后续变化影响本测试覆盖路径时，应针对新构建重新执行。
+
+## 已安装应用与真实本地模型
+
+`packaged-real-model.test.mjs` 直接启动指定的已安装 `.app`，通过真实本地模型服务执行读取笔记、审批写入、产物预览、看板验收和重启恢复。未提供下列三个必填变量时，测试明确跳过；不会以可控响应替代真实模型。
+
+```bash
+MESNIER_INSTALLED_APP=/Applications/Mesnier.app \
+MESNIER_REAL_MODEL_URL=http://127.0.0.1:65050/v1 \
+MESNIER_REAL_MODEL=mesnier-local-qwen3-4b \
+node --test tests/ui/packaged-real-model.test.mjs
+```
+
+模型服务须由调用者先启动。端口和模型名称是本轮示例，按实际服务设置；需要鉴权时可额外提供 `MESNIER_REAL_API_KEY`。测试不会停止或重新配置该服务。模型推理最长等待十分钟，整轮超时十五分钟。`MESNIER_UI_EVIDENCE` 同样用于指定本次独立证据目录。
+
+应用子进程的 `PATH` 仅设为 `/usr/bin:/bin:/usr/sbin:/sbin`，并逐一检查该搜索路径中不存在 `kimi`、`kimi-code`、`codex`、`claude` 和 `opencode`。这证明本次运行不从搜索路径使用已有独立 Agent CLI，不代表机器上没有安装过这些程序。测试核对 `isPackaged`、真实应用可执行路径、Resources 路径及代码签名，并在前后计算完整 Resources 目录摘要，绑定实际运行的安装文件。
+
+所有业务变化仍通过界面操作，实际状态只读核对；仅批准与指定输出文件精确匹配的 `Write` 请求，范围外请求会拒绝并判为失败。本次配置和普通工作目录保持隔离，重启后核对执行数、事件数、产物哈希及修改时间，确认没有自动重放。不会操作剪贴板。完整报告与截图保留在证据目录；已安装应用的原生文件夹选择器、Finder 展示、公证和其他平台仍需独立验证。
