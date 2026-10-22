@@ -4,17 +4,23 @@ import { createHash } from 'node:crypto';
 export interface FileStamp { size: number; hash: string }
 export type FileInventory = Map<string, FileStamp>;
 const ignored = new Set(['.git', 'node_modules', '.venv', '__pycache__', '.DS_Store']);
-export async function inventory(root: string): Promise<FileInventory> {
+export async function inventory(root: string, signal?: AbortSignal): Promise<FileInventory> {
   const result: FileInventory = new Map();
   const visit = async (directory: string) => {
-    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    signal?.throwIfAborted();
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    signal?.throwIfAborted();
+    for (const entry of entries) {
+      signal?.throwIfAborted();
       if (ignored.has(entry.name)) continue;
       const file = path.join(directory, entry.name);
       if (entry.isSymbolicLink()) continue;
       if (entry.isDirectory()) { await visit(file); continue; }
       if (!entry.isFile()) continue;
       const stat = await fs.stat(file);
-      const hash = stat.size <= 8 * 1024 * 1024 ? createHash('sha256').update(await fs.readFile(file)).digest('hex') : `${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
+      signal?.throwIfAborted();
+      const hash = stat.size <= 8 * 1024 * 1024 ? createHash('sha256').update(await fs.readFile(file, { signal })).digest('hex') : `${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
+      signal?.throwIfAborted();
       result.set(path.relative(root, file), { size: stat.size, hash });
       if (result.size > 20000) throw new Error('工作目录超过 20,000 个文件，请选择更具体的子目录以跟踪产物。');
     }

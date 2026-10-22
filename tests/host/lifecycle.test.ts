@@ -159,3 +159,18 @@ test('模型连接检查验证工具调用并对错误凭据脱敏，旧测试�
     assert.equal(f.bench.state.models[0].model, 'changed'); assert.equal(f.bench.state.models[0].status, 'untested');
   } finally { release?.(); await new Promise<void>(resolve => server.close(() => resolve())); await f.dispose(); }
 });
+
+test('保存失败不启动未持久化执行，凭据变更不会破坏旧配置引用', async () => {
+  const f = await fixture();
+  const save = f.store.save.bind(f.store);
+  try {
+    const originalRef = f.model.credentialRef ?? f.model.id;
+    f.store.save = () => { throw new Error('fixture ENOSPC'); };
+    assert.throws(() => f.bench.saveModelConfig({ id: f.model.id, name: '新服务', provider: 'openai', model: 'new', baseUrl: 'http://127.0.0.1:2/v1', apiKey: 'new-service-key' }), /无法保存/);
+    assert.equal(f.bench.secrets.get(originalRef), 'fixture-secret');
+    await assert.rejects(f.send(), /无法保存/);
+    assert.equal(f.runtime.calls.filter(item => item.method === 'run').length, 0);
+    const persisted = JSON.parse(await fs.readFile(f.store.file, 'utf8'));
+    assert.equal(persisted.models[0].model, 'fixture'); assert.equal(persisted.models[0].credentialRef, originalRef);
+  } finally { f.store.save = save; await f.dispose(); }
+});

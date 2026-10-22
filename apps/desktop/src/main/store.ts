@@ -53,6 +53,16 @@ export class Store {
 }
 
 export interface Cipher { encrypt(value: string): string; decrypt(value: string): string }
+/** 同时处理服务错误中常见的 JSON/URL 转义，避免转义后的密钥绕过替换。 */
+export function redactCredential(value: string, secret: string) {
+  if (!secret) return value;
+  const forms = new Set([secret, encodeURIComponent(secret)]);
+  let escaped = secret;
+  for (let depth = 0; depth < 3; depth++) { escaped = JSON.stringify(escaped).slice(1, -1); forms.add(escaped); }
+  let result = value;
+  for (const form of [...forms].sort((left, right) => right.length - left.length)) result = result.split(form).join('[已隐藏凭据]');
+  return result;
+}
 export class Secrets {
   private values: Record<string, string>;
   private file: string;
@@ -68,10 +78,15 @@ export class Secrets {
     fs.writeFileSync(`${this.file}.next`, JSON.stringify(next), { mode: 0o600 });
     fs.renameSync(`${this.file}.next`, this.file); this.values = next;
   }
+  removeModel(id: string) {
+    const next = Object.fromEntries(Object.entries(this.values).filter(([reference]) => reference !== id && !reference.startsWith(`${id}:`)));
+    fs.writeFileSync(`${this.file}.next`, JSON.stringify(next), { mode: 0o600 });
+    fs.renameSync(`${this.file}.next`, this.file); this.values = next;
+  }
   redact(text: string) {
     let result = text;
     for (const id of Object.keys(this.values)) {
-      try { const secret = this.get(id); if (secret) result = result.split(secret).join('[已隐藏凭据]'); } catch { /* 不覆盖原始解密错误 */ }
+      try { result = redactCredential(result, this.get(id)); } catch { /* 不覆盖原始解密错误 */ }
     }
     return result.replace(/(Bearer\s+)[^\s"']+/gi, '$1[已隐藏凭据]');
   }

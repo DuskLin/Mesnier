@@ -6,8 +6,12 @@
   "author": "Mesnier",
   "type": "module",
   "main": "dist/main/index.cjs",
-  "engines": { "node": ">=24.15.0" },
-  "workspaces": ["packages/*"],
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build:app": "node scripts/build-app.mjs",
@@ -15,9 +19,11 @@
     "build": "npm run build:app && npm run build:runtime",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/host/*.test.ts",
-    "test:runtime": "npm run test --workspace @mesnier/runtime",
+    "test:runtime": "node scripts/test-runtime.mjs",
     "package": "npm run build && node scripts/package.mjs",
-    "start": "electron ."
+    "start": "electron .",
+    "test:probe": "node --test tests/acceptance/probe-regressions.test.mjs",
+    "test:mutations": "node tests/acceptance/check-regression-mutations.mjs && node --import tsx tests/acceptance/check-host-mutations.mjs"
   },
   "dependencies": {
     "@mesnier/shared": "0.1.0",
@@ -43,10 +49,46 @@
   "build": {
     "appId": "app.mesnier.desktop",
     "productName": "Mesnier",
-    "directories": { "output": "release" },
-    "files": ["dist/**", "package.json"],
-    "extraResources": [{ "from": "build/runtime", "to": "runtime" }, { "from": "vendor/kimi/LICENSE", "to": "licenses/Kimi-Code-MIT.txt" }],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/runtime",
+        "to": "runtime"
+      },
+      {
+        "from": "build/runtime/node_modules",
+        "to": "runtime/node_modules",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "vendor/kimi/LICENSE",
+        "to": "licenses/Kimi-Code-MIT.txt"
+      },
+      {
+        "from": "node_modules/electron/dist/LICENSE",
+        "to": "licenses/Electron-LICENSE.txt"
+      },
+      {
+        "from": "node_modules/electron/dist/LICENSES.chromium.html",
+        "to": "licenses/Chromium-LICENSES.html"
+      }
+    ],
     "npmRebuild": false,
-    "mac": { "category": "public.app-category.productivity", "target": ["dmg", "zip"], "identity": null, "icon": "build/icon.icns" }
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "identity": "-",
+      "notarize": false,
+      "icon": "build/icon.icns"
+    }
   }
 }

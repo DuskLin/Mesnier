@@ -5,6 +5,8 @@ export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
 export interface ModelConfig {
   id: string; name: string; provider: Provider; baseUrl: string; model: string;
   maxContextSize: number; hasApiKey: boolean;
+  /** 仅为本机加密凭据的引用，不包含密钥。 */
+  credentialRef?: string;
   status: 'untested' | 'ready' | 'error'; lastTestedAt?: string; error?: string;
 }
 export interface AgentProfile { id: string; name: string; instructions: string }

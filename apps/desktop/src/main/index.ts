@@ -28,8 +28,10 @@ else {
     });
     const runtimeRoot = app.isPackaged ? path.join(process.resourcesPath, 'runtime') : path.join(app.getAppPath(), 'build', 'runtime');
     const runtime = new RuntimeClient(path.join(runtimeRoot, 'bin', 'node'), path.join(runtimeRoot, 'worker.mjs'), dataRoot, message => {
-      fs.mkdirSync(path.join(dataRoot, 'logs'), { recursive: true });
-      fs.appendFileSync(path.join(dataRoot, 'logs', 'runtime.log'), secrets.redact(message), { mode: 0o600 });
+      try {
+        fs.mkdirSync(path.join(dataRoot, 'logs'), { recursive: true });
+        fs.appendFileSync(path.join(dataRoot, 'logs', 'runtime.log'), secrets.redact(message), { mode: 0o600 });
+      } catch (error) { workbench?.stopForStorageFailure(error); }
     });
     workbench = new Workbench(store, secrets, runtime, snapshot => { if (window && !window.isDestroyed()) window.webContents.send('mesnier:snapshot', snapshot); });
     const indexPath = path.join(__dirname, '../renderer/index.html');
@@ -50,7 +52,10 @@ else {
       },
       copyText: (value: string) => { if (typeof value !== 'string' || value.length > 1024 * 1024) throw new Error('复制内容格式或长度无效。'); clipboard.writeText(value); }
     };
-    for (const method of methods) handlers[method] = (input: any) => (workbench![method] as (input: any) => unknown).call(workbench, input);
+    for (const method of methods) handlers[method] = (input: any) => {
+      if (method !== 'readArtifact' && method !== 'cancelRun') workbench!.ensureWritable();
+      return (workbench![method] as (input: any) => unknown).call(workbench, input);
+    };
     for (const [name, handler] of Object.entries(handlers)) {
       ipcMain.handle(`mesnier:${name}`, async (event, ...args) => {
         if (!window || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || event.senderFrame.url !== indexUrl) throw new Error('拒绝来自非应用界面的请求。');
@@ -82,6 +87,8 @@ else {
   app.on('before-quit', event => {
     if (quitting || !workbench) return;
     event.preventDefault(); quitting = true;
-    workbench.close().finally(() => app.quit());
+    workbench.close().catch(error => {
+      dialog.showErrorBox('退出前核对未完成', `未能确认所有运行资源已经停止，请核对任务目录和执行状态。\n${error instanceof Error ? error.message : String(error)}`);
+    }).finally(() => app.quit());
   });
 }

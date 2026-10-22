@@ -3,7 +3,7 @@ import path from 'node:path';
 import { constants } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type { ArtifactContent, ModelConfig, ModelInput, Project, Run, RunEvent, SendInput, Session, Snapshot, Task, TaskInput } from '@mesnier/shared';
-import { Store, Secrets, RUNTIME_VERSION, UPSTREAM_COMMIT } from './store';
+import { Store, Secrets, RUNTIME_VERSION, UPSTREAM_COMMIT, redactCredential } from './store';
 import { RuntimeRequestError, type RuntimePort } from './runtime-client';
 import { inventory, withinWorkspace, type FileInventory } from './artifacts';
 
@@ -36,23 +36,33 @@ export class Workbench {
   private resolving = new Set<string>();
   private finalizing = new Map<string, Promise<void>>();
   private starting = new Set<string>();
+  private preparation?: { runId: string; controller: AbortController; promise: Promise<void> };
   private cancellationTimers = new Map<string, NodeJS.Timeout>();
   private flushTimer?: NodeJS.Timeout;
   private closing = false;
   private recovering = false;
+  private recovery?: Promise<void>;
+  private persistenceFailure?: Error;
   constructor(readonly store: Store, readonly secrets: Secrets, readonly runtime: RuntimePort, private changed: (snapshot: Snapshot) => void) {
     runtime.on('event', event => { void this.event(event).catch(error => this.emergency(error)); });
     runtime.on('exit', reason => {
+      if (this.persistenceFailure) return;
       this.state.runtime.ready = false; this.state.runtime.error = reason;
-      if (this.busy) void this.finish(this.busy, 'interrupted', reason).catch(error => this.emergency(error));
-      else this.publish();
+      if (this.closing || this.recovering) {
+        if (this.busy) void this.finish(this.busy, 'interrupted', reason).catch(error => this.emergency(error));
+        else this.publish();
+      } else void this.stopUncertain(this.busy, reason).catch(error => this.emergency(error));
     });
   }
   get state() { return this.store.data; }
   snapshot() { return this.store.snapshot(); }
+  ensureWritable() { if (this.persistenceFailure) throw this.persistenceFailure; if (this.closing) throw new Error('应用正在退出。'); }
+  stopForStorageFailure(cause: unknown) {
+    try { this.storageFailed(cause); } catch { /* 已展示失败并停止运行；事件回调不能抛出未捕获异常 */ }
+  }
   private clean(value: string) {
     let clean = this.secrets.redact(value);
-    for (const secret of this.secretsForRun.values()) if (secret) clean = clean.split(secret).join('[已隐藏凭据]');
+    for (const secret of this.secretsForRun.values()) clean = redactCredential(clean, secret);
     return clean;
   }
   private emergency(error: unknown) {
@@ -60,18 +70,30 @@ export class Workbench {
     this.changed(this.snapshot());
   }
   private publish(immediate = true) {
+    if (this.persistenceFailure) throw this.persistenceFailure;
     this.state.revision++;
     if (immediate) {
       if (this.flushTimer) clearTimeout(this.flushTimer); this.flushTimer = undefined;
-      this.store.save(); this.changed(this.snapshot());
+      try { this.store.save(); } catch (error) { this.storageFailed(error); }
+      this.changed(this.snapshot());
     } else if (!this.flushTimer) this.flushTimer = setTimeout(() => {
       this.flushTimer = undefined;
-      try { this.store.save(); this.changed(this.snapshot()); } catch (error) { this.emergency(error); }
+      try { this.store.save(); this.changed(this.snapshot()); } catch (error) { try { this.storageFailed(error); } catch { /* 失败已展示并停止后续执行 */ } }
     }, 80);
+  }
+  private storageFailed(cause: unknown): never {
+    if (this.persistenceFailure) throw this.persistenceFailure;
+    this.persistenceFailure = new Error(this.clean(`工作记录无法保存，已停止后续执行。请检查磁盘或目录权限后重启应用：${String(cause)}`));
+    this.closing = true; this.state.runtime.ready = false; this.state.runtime.error = this.persistenceFailure.message;
+    this.preparation?.controller.abort(this.persistenceFailure);
+    for (const run of this.state.runs.filter(active)) { run.status = 'interrupted'; run.error = this.persistenceFailure.message; run.endedAt = now(); }
+    this.changed(this.snapshot()); void this.runtime.close().catch(error => this.emergency(error));
+    throw this.persistenceFailure;
   }
   async initialize() {
     try {
       const info = await this.runtime.request('info');
+      this.ensureWritable();
       this.state.runtime = { ready: true, version: info.version ?? RUNTIME_VERSION, upstreamCommit: info.upstreamCommit ?? UPSTREAM_COMMIT };
     } catch (error) { this.state.runtime.error = this.clean(String(error)); this.state.runtime.ready = false; }
     this.publish();
@@ -81,14 +103,19 @@ export class Workbench {
   private getRun(id: string) { const value = this.state.runs.find(item => item.id === id); if (!value) throw new Error('执行不存在。'); return value; }
   private getTask(id: string) { const value = this.state.tasks.find(item => item.id === id); if (!value) throw new Error('任务不存在。'); return value; }
   private getModel(id?: string) { const value = this.state.models.find(item => item.id === (id ?? this.state.defaultModelId)); if (!value) throw new Error('请先在设置中添加模型。'); return value; }
-  private async checkDirectory(directory: string) {
+  private async checkDirectory(directory: string, signal?: AbortSignal) {
+    signal?.throwIfAborted();
     if (!path.isAbsolute(directory)) throw new Error('工作目录必须是绝对路径。');
     const real = await fs.realpath(directory);
+    signal?.throwIfAborted();
     if (!(await fs.stat(real)).isDirectory()) throw new Error('工作路径不是目录。');
-    await fs.access(real, constants.R_OK | constants.W_OK | constants.X_OK); return real;
+    signal?.throwIfAborted();
+    await fs.access(real, constants.R_OK | constants.W_OK | constants.X_OK);
+    signal?.throwIfAborted(); return real;
   }
   async createProject(input: { name?: string; path: string }): Promise<Project> {
     const directory = await this.checkDirectory(text(input.path, '工作目录', 4096));
+    this.ensureWritable();
     const exists = this.state.projects.find(item => item.path === directory); if (exists) return structuredClone(exists);
     const project = { id: randomUUID(), path: directory, name: input.name ? text(input.name, '项目名称', 160) : path.basename(directory), createdAt: now() };
     this.state.projects.push(project); this.publish(); return structuredClone(project);
@@ -105,7 +132,7 @@ export class Workbench {
   }
   renameSession(input: { sessionId: string; title: string }) { this.getSession(input.sessionId).title = text(input.title, '会话标题', 200); this.publish(); }
   async sendMessage(input: SendInput): Promise<Run> {
-    if (this.closing) throw new Error('应用正在退出。');
+    this.ensureWritable();
     const requestId = text(input.requestId, '请求标识', 200);
     const existing = this.state.runs.find(item => item.requestId === requestId);
     if (existing) {
@@ -116,6 +143,7 @@ export class Workbench {
     if (this.state.runs.some(item => item.sessionId === session.id && active(item))) throw new Error('当前会话正在执行。输入会保留，请等待结束或取消后再发送。');
     if (!this.state.runtime.ready) { await this.initialize(); if (!this.state.runtime.ready) throw new Error(this.state.runtime.error ?? '内置运行时尚未就绪。'); }
     const workspace = await this.checkDirectory(project.path);
+    this.ensureWritable();
     // 异步目录检查之后再检查，防止同一时刻的多次 IPC 重入。
     const duplicate = this.state.runs.find(item => item.requestId === requestId);
     if (duplicate) {
@@ -134,22 +162,40 @@ export class Workbench {
       prompt, status: 'queued', agent: structuredClone(agent), model: structuredClone(model), workspace,
       runtimeVersion: this.state.runtime.version, upstreamCommit: this.state.runtime.upstreamCommit, createdAt: now(), retryOf: input.retryOf
     };
-    const credential = this.secrets.get(model.id); this.secretsForRun.set(run.id, credential);
+    const credential = this.secrets.get(model.credentialRef ?? model.id); this.secretsForRun.set(run.id, credential);
     this.state.runs.push(run);
     this.state.messages.push({ id: randomUUID(), runId: run.id, sessionId: session.id, role: 'user', text: prompt, createdAt: now() });
     session.updatedAt = now(); if (session.title === '新的对话') session.title = prompt.slice(0, 48);
     if (task) { task.status = 'in_progress'; task.updatedAt = now(); delete task.acceptedAt; delete task.acceptanceNote; }
     this.publish(); void this.pump(); return structuredClone(run);
   }
-  private async pump() {
-    if (this.busy || this.closing || this.recovering || this.starting.size) return;
+  private pump() {
+    if (this.busy || this.closing || this.recovering || this.starting.size || this.preparation) return;
     const run = this.state.runs.find(item => item.status === 'queued'); if (!run) return;
-    this.busy = run.id; run.status = 'running'; run.startedAt = now(); this.publish();
+    this.busy = run.id;
+    const controller = new AbortController();
+    // 先登记准备过程，再执行其中的异步操作；关闭可等待它退出。
+    const promise = Promise.resolve().then(() => this.prepareRun(run, controller.signal)).catch(error => this.emergency(error)).finally(() => {
+      if (this.preparation?.runId === run.id) this.preparation = undefined;
+      if (!this.closing && !this.recovering) this.pump();
+    });
+    this.preparation = { runId: run.id, controller, promise };
+  }
+  private async prepareRun(run: Run, signal: AbortSignal) {
+    const mayStart = () => !signal.aborted && !this.closing && !this.persistenceFailure && this.busy === run.id && active(run) && run.status !== 'cancelling';
     try {
-      if (!this.state.runtime.ready) { await this.initialize(); if (!this.state.runtime.ready) throw new Error(this.state.runtime.error ?? '运行时未就绪'); }
-      await this.checkDirectory(run.workspace);
-      this.beforeFiles.set(run.id, await inventory(run.workspace));
-      if (this.getRun(run.id).status === 'cancelling') { await this.finish(run.id, 'cancelled'); return; }
+      if (!mayStart()) { if (run.status === 'cancelling' && !this.closing) await this.finish(run.id, 'cancelled'); return; }
+      run.status = 'running'; run.startedAt = now(); this.publish();
+      if (!this.state.runtime.ready) {
+        await this.initialize(); signal.throwIfAborted();
+        if (!mayStart()) return;
+        if (!this.state.runtime.ready) throw new Error(this.state.runtime.error ?? '运行时未就绪');
+      }
+      await this.checkDirectory(run.workspace, signal);
+      if (!mayStart()) return;
+      const before = await inventory(run.workspace, signal);
+      if (!mayStart()) return;
+      this.beforeFiles.set(run.id, before);
       const session = this.getSession(run.sessionId);
       // 配置和凭据在入队时捕获，不受后续默认模型修改影响。
       this.starting.add(run.id);
@@ -162,25 +208,31 @@ export class Workbench {
       if (active(run)) this.accepted.add(run.id);
       if (this.getRun(run.id).status === 'cancelling') await this.runtime.request('cancel', { runId: run.id });
     } catch (error) {
-      if (error instanceof RuntimeRequestError && error.uncertain) await this.stopUncertain(run.id, this.clean(error.message));
+      if (this.closing || this.persistenceFailure || !active(run)) return;
+      if (signal.aborted && run.status === 'cancelling') await this.finish(run.id, 'cancelled');
+      else if (error instanceof RuntimeRequestError && error.uncertain) await this.stopUncertain(run.id, this.clean(error.message));
       else await this.finish(run.id, 'failed', this.clean(String(error)));
     } finally {
       this.starting.delete(run.id);
-      if (!this.closing && !this.recovering) void this.pump();
     }
   }
-  private async stopUncertain(id: string, reason: string) {
+  private async stopUncertain(id: string | undefined, reason: string) {
+    if (this.recovery) return this.recovery;
     this.recovering = true;
-    await this.runtime.close();
-    await this.finish(id, 'interrupted', reason);
-    this.recovering = false;
-    if (!this.closing) void this.pump();
+    this.recovery = (async () => {
+      await this.runtime.close();
+      if (id) await this.finish(id, 'interrupted', reason);
+      this.recovering = false;
+      if (!this.closing) void this.pump();
+    })();
+    try { await this.recovery; } finally { this.recovery = undefined; }
   }
   async cancelRun(id: string) {
     const run = this.getRun(id); if (!active(run)) throw new Error('执行已经结束。');
     if (run.status === 'cancelling') return;
     if (run.status === 'queued') { await this.finish(id, 'cancelled'); return; }
     run.status = 'cancelling'; this.publish();
+    if (this.preparation?.runId === id && !this.starting.has(id)) this.preparation.controller.abort();
     const timer = setTimeout(() => {
       void (async () => {
         // 超时只停止本应用 worker；未确认工具结果保持待核对，不宣称撤销副作用。
@@ -215,12 +267,12 @@ export class Workbench {
     this.publish(); return structuredClone(task);
   }
   updateTask(input: { taskId: string; title?: string; description?: string; acceptanceCriteria?: string; agentId?: string }): Task {
-    const task = this.getTask(input.taskId);
-    if (input.title !== undefined) task.title = text(input.title, '任务标题', 200);
-    if (input.description !== undefined) task.description = optionalText(input.description, '任务描述');
-    if (input.acceptanceCriteria !== undefined) task.acceptanceCriteria = optionalText(input.acceptanceCriteria, '验收标准');
-    if (input.agentId !== undefined) { if (!this.state.agents.some(item => item.id === input.agentId)) throw new Error('Agent 配置不存在。'); task.agentId = input.agentId; }
-    task.updatedAt = now(); this.publish(); return structuredClone(task);
+    const task = this.getTask(input.taskId); const next = { ...task };
+    if (input.title !== undefined) next.title = text(input.title, '任务标题', 200);
+    if (input.description !== undefined) next.description = optionalText(input.description, '任务描述');
+    if (input.acceptanceCriteria !== undefined) next.acceptanceCriteria = optionalText(input.acceptanceCriteria, '验收标准');
+    if (input.agentId !== undefined) { if (!this.state.agents.some(item => item.id === input.agentId)) throw new Error('Agent 配置不存在。'); next.agentId = input.agentId; }
+    next.updatedAt = now(); Object.assign(task, next); this.publish(); return structuredClone(task);
   }
   enqueueTask(input: { taskId: string; requestId: string; modelId?: string }) {
     const task = this.getTask(input.taskId);
@@ -233,7 +285,8 @@ export class Workbench {
     const task = this.getTask(input.taskId);
     const last = this.state.runs.filter(item => item.taskId === task.id).at(-1);
     if (task.status !== 'review' || last?.status !== 'succeeded') throw new Error('任务尚未进入待验收状态，不能直接完成。');
-    task.status = 'done'; task.acceptedAt = now(); task.updatedAt = now(); task.acceptanceNote = optionalText(input.note, '验收说明', 10000);
+    const note = optionalText(input.note, '验收说明', 10000);
+    task.status = 'done'; task.acceptedAt = now(); task.updatedAt = now(); task.acceptanceNote = note;
     this.publish(); return structuredClone(task);
   }
   saveModelConfig(input: ModelInput): ModelConfig {
@@ -242,24 +295,27 @@ export class Workbench {
     if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error('服务地址须为不含凭据、查询参数或片段的 HTTP(S) URL。');
     const context = input.maxContextSize ?? 128000;
     if (!Number.isInteger(context) || context < 1024 || context > 10000000) throw new Error('上下文长度需为 1024 至 10000000 之间的整数。');
-    const id = input.id ?? randomUUID(); if (input.id) this.getModel(id);
+    const id = input.id ?? randomUUID(); const previous = input.id ? this.getModel(id) : undefined;
     const model: ModelConfig = { id, name: text(input.name, '配置名称', 100), provider: input.provider, baseUrl: url.toString().replace(/\/$/, ''), model: text(input.model, '模型名称', 200), maxContextSize: context, hasApiKey: false, status: 'untested' };
     if (input.apiKey !== undefined) {
       if (typeof input.apiKey !== 'string' || input.apiKey.length > 16384) throw new Error('凭据格式无效。');
-      this.secrets.set(id, input.apiKey.trim());
+      // 每次更换生成新引用：配置写入失败时，旧配置仍能使用原有加密凭据。
+      model.credentialRef = `${id}:${randomUUID()}`;
+      this.secrets.set(model.credentialRef, input.apiKey.trim());
     }
-    model.hasApiKey = this.secrets.has(id);
+    else model.credentialRef = previous?.credentialRef;
+    model.hasApiKey = this.secrets.has(model.credentialRef ?? id);
     const index = this.state.models.findIndex(item => item.id === id); if (index < 0) this.state.models.push(model); else this.state.models[index] = model;
     this.state.defaultModelId ??= id; this.publish(); return structuredClone(model);
   }
   setDefaultModel(id: string) { this.getModel(id); this.state.defaultModelId = id; this.publish(); }
   deleteModel(id: string) {
-    this.getModel(id); this.state.models = this.state.models.filter(item => item.id !== id); this.secrets.set(id, '');
+    this.getModel(id); this.state.models = this.state.models.filter(item => item.id !== id);
     if (this.state.defaultModelId === id) this.state.defaultModelId = this.state.models[0]?.id;
-    this.publish();
+    this.publish(); this.secrets.removeModel(id);
   }
   async testModel(id: string): Promise<{ ok: boolean; message: string }> {
-    const current = this.getModel(id); const model = structuredClone(current); const key = this.secrets.get(id);
+    const current = this.getModel(id); const model = structuredClone(current); const key = this.secrets.get(model.credentialRef ?? id);
     const tool = { name: 'mesnier_connection_check', description: 'Confirm that tool calling works.', parameters: { type: 'object', properties: { ready: { type: 'boolean' } }, required: ['ready'], additionalProperties: false } };
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     let endpoint: string; let body: Record<string, unknown>;
@@ -282,7 +338,7 @@ export class Workbench {
       const calls = model.provider === 'anthropic' ? result.content?.filter((item: any) => item.type === 'tool_use') : model.provider === 'openai_responses' ? result.output?.filter((item: any) => item.type === 'function_call') : result.choices?.[0]?.message?.tool_calls;
       if (!calls?.some((item: any) => (item.function?.name ?? item.name) === tool.name)) throw new Error('服务已响应，但没有返回要求的工具调用；请检查模型是否支持工具调用。');
       ok = true; message = '连接与基础工具调用检查通过。实际任务能力以执行结果为准。';
-    } catch (error) { message = this.clean(error instanceof Error ? error.message : String(error)); if (key) message = message.split(key).join('[已隐藏凭据]'); }
+    } catch (error) { message = redactCredential(this.clean(error instanceof Error ? error.message : String(error)), key); }
     // 测试期间若用户修改/删除配置，旧结果不能覆盖新配置。
     if (this.state.models.find(item => item.id === id) === current) {
       current.status = ok ? 'ready' : 'error'; current.lastTestedAt = now(); current.error = ok ? undefined : message; this.publish();
@@ -290,10 +346,10 @@ export class Workbench {
     return { ok, message };
   }
   private async event(event: RunEvent) {
-    if (!event || typeof event.id !== 'string' || this.seenEvents.has(event.id)) return;
+    if (this.persistenceFailure || !event || typeof event.id !== 'string' || this.seenEvents.has(event.id)) return;
     const run = this.state.runs.find(item => item.id === event.runId); if (!run || !active(run)) return;
     this.seenEvents.add(event.id);
-    const safe = JSON.parse(this.clean(JSON.stringify(event))) as RunEvent;
+    const safe: RunEvent = { ...event, payload: JSON.parse(JSON.stringify(event.payload, (_key, value: unknown) => typeof value === 'string' ? this.clean(value) : value)) };
     const payload = safe.payload;
     this.state.events.push(safe);
     if (safe.kind === 'session.ready' && typeof payload.sessionId === 'string') this.getSession(run.sessionId).runtimeSessionId = payload.sessionId;
@@ -352,6 +408,7 @@ export class Workbench {
     } catch (failure) {
       this.state.events.push({ id: randomUUID(), runId: id, kind: 'warning', payload: { message: this.clean(`产物扫描未完成：${String(failure)}`) }, at: now() });
     }
+    if (this.persistenceFailure) return;
     run.status = status; run.endedAt = now(); run.error = error ? this.clean(error) : undefined;
     this.state.approvals = this.state.approvals.filter(item => item.runId !== id);
     const task = this.state.tasks.find(item => item.id === run.taskId);
@@ -378,10 +435,12 @@ export class Workbench {
   projectPath(id: string) { return this.getProject(id).path; }
   async close() {
     this.closing = true; if (this.flushTimer) clearTimeout(this.flushTimer);
+    this.preparation?.controller.abort();
     for (const timer of this.cancellationTimers.values()) clearTimeout(timer);
     await this.runtime.close();
+    await this.preparation?.promise;
     for (const run of this.state.runs.filter(active)) await this.finish(run.id, 'interrupted', '应用已退出；请检查已有文件后明确继续。');
     await Promise.all(this.finalizing.values());
-    this.store.save();
+    if (!this.persistenceFailure) this.store.save();
   }
 }

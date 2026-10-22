@@ -1,0 +1,11 @@
+import { spawn } from 'node:child_process';
+import { access, readdir } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const distribution = resolve(process.env.MESNIER_TEST_RUNTIME_ROOT ?? resolve(root, 'build/runtime'));
+await access(resolve(distribution, 'worker.mjs'));
+const tests = (await readdir(resolve(root, 'packages/runtime/test'))).filter(name => name.endsWith('.test.mjs')).map(name => resolve(root, 'packages/runtime/test', name));
+const child = spawn(process.execPath, ['--test', ...tests], { cwd: root, stdio: 'inherit', env: { ...process.env, MESNIER_TEST_RUNTIME_ROOT: distribution } });
+child.once('error', error => { console.error(error.message); process.exitCode = 1; });
+child.once('exit', code => { process.exitCode = code ?? 1; });
