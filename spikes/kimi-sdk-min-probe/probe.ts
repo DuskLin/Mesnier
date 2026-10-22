@@ -3,11 +3,11 @@
  *
  * Copyright (c) 2026 Moonshot AI
  *
- * 本文件接入 MoonshotAI/kimi-code 的 node-sdk 源码（exports 指向源码，不是 dist）。
- * 版权声明按上游根 LICENSE 原样保留。本次不复制、不修改、不构建上游仓库。
+ * 本文件通过 Mesnier 构建产物接入 MoonshotAI/kimi-code 的 node-sdk。
+ * 版权声明按上游根 LICENSE 保留；本机参考仓库保持只读。
  *
- * Mesnier 最小接入探针。只验证隔离边界和退出码，不把未发生的模型或工具步骤记为通过。
- * 1.1 / 1.2 在改掉复核指出的问题之前不能记为通过；本程序也不勾选这两项。
+ * Mesnier 最小接入探针。不把未发生的模型或工具步骤记为通过。
+ * 受控协议模型与真实模型分别记录；本程序不勾选 OpenSpec 任务或判定整个产品交付。
  */
 
 import { createHash } from 'node:crypto';
@@ -19,6 +19,7 @@ import {
 } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, join, relative, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import type {
   ApprovalRequest,
@@ -34,8 +35,9 @@ const TURN_TIMEOUT_MS = 120_000;
 const EXPECTED_WRITE_CONTENT = 'mesnier-kimi-sdk-min-probe\n';
 
 const SPIKE_ROOT = resolve(import.meta.dirname);
-const SANDBOX = resolve(SPIKE_ROOT, 'sandbox');
-const EVIDENCE_PATH = resolve(SPIKE_ROOT, 'evidence', 'latest.json');
+const OUTPUT_ROOT = resolve(process.env.MESNIER_PROBE_OUTPUT_ROOT ?? SPIKE_ROOT);
+const SANDBOX = resolve(OUTPUT_ROOT, 'sandbox');
+const EVIDENCE_PATH = resolve(OUTPUT_ROOT, 'evidence', 'latest.json');
 const PERSONAL_DIRS = [resolve(homedir(), '.kimi'), resolve(homedir(), '.kimi-code')];
 
 type ScenarioStatus = '通过' | '未通过' | '未运行' | '未覆盖' | '待核对';
@@ -93,6 +95,7 @@ interface Evidence {
   事件摘要: EventSummary[];
   增量事件数: number;
   模型名: string | null;
+  模型来源: '受控协议模拟' | '外部服务（须另行确认）';
   目标文件: string | null;
   恢复前哈希: string | null;
   恢复后哈希: string | null;
@@ -124,13 +127,13 @@ function blankEvidence(): Evidence {
     envValue(name) === undefined ? '缺失' : '已设置';
   return {
     说明:
-      '本次只接入隔离后的 SDK 入口。没有运行 pnpm install 或 pnpm build，node-sdk 的 exports 指向源码，dist 不可用。1.1 与 1.2 未通过。',
+      '本次验证独立 SDK 入口及真实工具执行；受控协议模型不等同真实模型能力。整体验收与任务状态由独立报告确认。',
     复核通过: false,
     任务1_1与1_2: '未通过',
     退出码: 1,
     未覆盖项: [],
     node版本: process.version,
-    构建命令: '未运行。本次禁止在参考仓库执行 pnpm install 与 pnpm build，dist 接入不可用。',
+    构建命令: 'SDK 使用 Mesnier packages/runtime/dist/sdk.mjs；构建证据见运行时验证记录。',
     上游SHA: UPSTREAM_SHA,
     上游HEAD: null,
     上游工作区字节数: null,
@@ -155,6 +158,7 @@ function blankEvidence(): Evidence {
     事件摘要: [],
     增量事件数: 0,
     模型名: null,
+    模型来源: process.env.MESNIER_PROBE_MODEL_KIND === 'controlled' ? '受控协议模拟' : '外部服务（须另行确认）',
     目标文件: null,
     恢复前哈希: null,
     恢复后哈希: null,
@@ -380,7 +384,7 @@ async function writeEvidence(evidence: Evidence): Promise<void> {
     .map((name) => envValue(name))
     .filter((value): value is string => value !== undefined);
   const serialized = redact(JSON.stringify(evidence, null, 2), secrets);
-  await mkdir(resolve(SPIKE_ROOT, 'evidence'), { recursive: true });
+  await mkdir(resolve(OUTPUT_ROOT, 'evidence'), { recursive: true });
   await writeFile(EVIDENCE_PATH, `${serialized}\n`, { encoding: 'utf8', mode: 0o600 });
 }
 
@@ -408,9 +412,12 @@ async function runCredentialed(evidence: Evidence, dirs: { homeDir: string; conf
   let exitCode = 1;
 
   try {
-    const sdk = await import('@moonshot-ai/kimi-code-sdk');
+    const sdkPath = resolve(process.env.MESNIER_PROBE_SDK_PATH ?? join(SPIKE_ROOT, '../../packages/runtime/dist/sdk.mjs'));
+    const sdk = await import(pathToFileURL(sdkPath).href);
     harness = sdk.createKimiHarness({
       homeDir: dirs.homeDir,
+      osHomeDir: dirs.homeDir,
+      displayName: 'Mesnier Agent',
       configPath: dirs.configPath,
       identity: {
         productName: 'mesnier-probe',
@@ -567,8 +574,17 @@ async function runCredentialed(evidence: Evidence, dirs: { homeDir: string; conf
 
     const cancelBefore = await fileSha256(targetFile);
     const cancelWatch = watchTurn(session, TURN_TIMEOUT_MS);
+    let resolveStreaming: () => void = () => {};
+    const streaming = new Promise<void>((resolve) => { resolveStreaming = resolve; });
+    const stopStreamingWatch = session.onEvent((event) => {
+      if (event.type === 'assistant.delta') resolveStreaming();
+    });
     try {
       await session.prompt('请连续写三段关于取消语义的说明，每段至少八十个字，不要调用工具。');
+      await Promise.race([
+        streaming,
+        cancelWatch.ended.then(() => { throw new Error('模型尚未产生流式输出便结束，未覆盖生成中的取消'); }),
+      ]);
       await session.cancel();
       const ended = await cancelWatch.ended;
       const cancelAfter = await fileSha256(targetFile);
@@ -579,11 +595,12 @@ async function runCredentialed(evidence: Evidence, dirs: { homeDir: string; conf
       if (cancelBefore !== null && cancelAfter === cancelBefore) {
         evidence.副作用 = '取消前已写出的文件仍在，副作用保留，文件内容没有被程序清除。';
       }
-      note(evidence.场景.取消, '通过', '收到 turn.ended reason=cancelled。已有文件副作用保留。');
+      note(evidence.场景.取消, '通过', '先收到 assistant.delta 再请求取消，收到 turn.ended reason=cancelled。已有文件副作用保留。');
     } catch (error) {
       note(evidence.场景.取消, '待核对', `没有收到取消事件：${error instanceof Error ? error.message : '未知错误'}`);
       return 1;
     } finally {
+      stopStreamingWatch();
       cancelWatch.dispose();
     }
 
@@ -599,6 +616,8 @@ async function runCredentialed(evidence: Evidence, dirs: { homeDir: string; conf
       const historyBefore = await fileSha256(wirePath);
       const resumed = sdk.createKimiHarness({
         homeDir: dirs.homeDir,
+        osHomeDir: dirs.homeDir,
+        displayName: 'Mesnier Agent',
         configPath: dirs.configPath,
         identity: {
           productName: 'mesnier-probe',

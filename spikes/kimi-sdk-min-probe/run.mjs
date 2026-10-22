@@ -12,7 +12,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const sandbox = resolve(here, 'sandbox');
+const sandbox = resolve(process.env.MESNIER_PROBE_OUTPUT_ROOT ?? here, 'sandbox');
 
 process.env.KIMI_DISABLE_TELEMETRY = '1';
 process.env.KIMI_CODE_HOME = sandbox;

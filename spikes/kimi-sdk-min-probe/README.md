@@ -1,6 +1,6 @@
 # Kimi SDK 最小接入探针
 
-该探针覆盖会话、模型、文件工具、权限拒绝、取消和恢复。判定回归已经独立修复；SDK 构建产物接入及真实模型验证仍需完成。回归用例使用受控依赖替身，不能作为 OpenSpec 任务 1.1／1.2 或应用交付通过的证据。
+该探针覆盖会话、模型、文件工具、权限拒绝、取消和恢复。已接入 Mesnier 构建的真实 SDK，并以受控 HTTP 模型验证全部六个场景。受控模型不具备真实推理能力，不能代替真实模型或整个应用的验收。
 
 ## 运行判定回归
 
@@ -15,9 +15,17 @@ node tests/acceptance/check-regression-mutations.mjs
 
 ## 运行模型探针
 
-本阶段尚未声明可解析的 SDK 依赖，不能使用旧版 `pnpm dlx tsx` 命令宣称接入完成：切换到参考仓库不使探针自动成为上游 workspace 成员。参考仓库保持只读，后续从 Mesnier 自有构建产物接入 SDK。
+入口默认使用 `packages/runtime/dist/sdk.mjs` 和同目录构建分块。可以通过 `MESNIER_PROBE_SDK_PATH` 指向另一份已构建的 SDK；这仅用于隔离验证，不把参考仓库作为构建依赖。旧版 `pnpm dlx tsx` 命令不再使用，参考仓库保持只读。
 
-凭据仅从 `MESNIER_PROBE_API_KEY`、`MESNIER_PROBE_BASE_URL`、`MESNIER_PROBE_MODEL` 读取，不写入代码或提交证据。运行入口为 `node spikes/kimi-sdk-min-probe/run.mjs`：缺任一变量时不导入 SDK、不访问模型，生成 `evidence/latest.json` 并退出 2；当前凭据齐全但 SDK 不可解析时退出 1。退出 0 要求全部场景、收尾检查和证据写入都成功，但仍不能单独证明整个产品已交付。
+运行受控 HTTP 模型与真实 SDK 的六场景验收：
+
+```bash
+node tests/acceptance/run-sdk-probe.mjs
+```
+
+该命令创建独立临时目录与回环 HTTP 服务，结束时停止本次服务、保留证据，并核对 SDK 构建文件在运行前后没有变化。模型响应由本地 fixture 产生，文件与工具执行由真实 Kimi harness 完成。取消场景须先收到流式输出，避免只验证尚未开始生成的取消。
+
+直接连接外部模型时，凭据仅从 `MESNIER_PROBE_API_KEY`、`MESNIER_PROBE_BASE_URL`、`MESNIER_PROBE_MODEL` 读取，不写入代码或提交证据。运行入口为 `node spikes/kimi-sdk-min-probe/run.mjs`：缺任一变量时不导入 SDK、不访问模型，生成 `evidence/latest.json` 并退出 2；SDK 不可解析或任何场景失败时退出 1。可用 `MESNIER_PROBE_OUTPUT_ROOT` 指定本次输出目录；受控服务须设置 `MESNIER_PROBE_MODEL_KIND=controlled`，其他服务也须在独立报告确认来源。退出 0 不单独证明整个产品已交付。
 
 探针上游基线为 `44cdf8f4039e2ff20d3fe8a4e7868bd90fd786e1`。当前基线检查仍只读本机参考仓库，尚不是可分发运行时的验收入口。
 
