@@ -146,12 +146,13 @@ h1, h2, h3, h4, p { margin: 0; }
 .system-event { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: var(--muted); margin: 14px 0 14px 41px; }
 .system-event.error { color: var(--danger); background: var(--danger-soft); padding: 10px 12px; border-radius: 8px; }
 .system-event svg { margin-top: 2px; }
+.system-event span { min-width: 0; overflow-wrap: anywhere; }
 .run-divider { display: flex; align-items: center; gap: 10px; font-size: 10px; color: var(--muted); margin: 27px 0; }
 .run-divider::before, .run-divider::after { content: ''; height: 1px; background: var(--line); flex: 1; }
 .run-divider .status-badge { font-size: 10px; }
 .approval-card { margin: 13px 0 20px 41px; border: 1px solid color-mix(in srgb, var(--warning) 35%, var(--line)); border-radius: 10px; background: var(--warning-soft); padding: 16px; }
 .approval-title { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--warning); }
-.approval-card p { margin: 9px 0; font-size: 12px; line-height: 1.7; }
+.approval-card p { margin: 9px 0; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
 .approval-card .code-block { background: var(--surface); margin: 12px 0; max-height: 180px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .approval-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .composer-wrap { padding: 10px 28px 17px; }
@@ -258,6 +259,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .toast.error { color: var(--danger); border-color: var(--danger); }
 .toast.success { color: var(--accent-ink); }
 .toast > svg { margin-top: 4px; }
+.toast > span { min-width: 0; overflow-wrap: anywhere; }
 .toast .icon-button { margin: -2px -3px -3px 0; flex-shrink: 0; }
 .fatal-state { max-width: 500px; padding: 60px 30px; margin: 10vh auto; }
 .fatal-state h1 { font-size: 24px; margin-bottom: 15px; }
