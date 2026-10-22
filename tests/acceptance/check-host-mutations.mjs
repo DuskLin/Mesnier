@@ -25,8 +25,13 @@ const cases = [
   },
   {
     name: 'cannot-restart', file: 'runtime-client.ts', pattern: 'RuntimeClient 关闭真实子进程',
-    from: 'if (this.child === child) this.child = undefined;\n    this.closing = false;',
-    to: 'if (this.child === child) this.child = undefined;',
+    from: 'this.stopping = this.stop().then(() => { this.closing = false; }).finally(() => { this.stopping = undefined; });',
+    to: 'this.stopping = this.stop().finally(() => { this.stopping = undefined; });',
+  },
+  {
+    name: 'escaped-credential', file: 'store.ts', pattern: 'JSON 转义凭据',
+    from: 'for (let depth = 0; depth < 3; depth++) { escaped = JSON.stringify(escaped).slice(1, -1); forms.add(escaped); }',
+    to: '/* 受控破坏：只处理原始或 URL 编码形式 */',
   },
 ];
 const results = [];
@@ -35,7 +40,7 @@ for (const mutation of cases) {
   const main = path.join(snapshot, 'apps/desktop/src/main');
   await mkdir(main, { recursive: true });
   await writeFile(path.join(snapshot, 'package.json'), '{"type":"module"}\n');
-  for (const file of ['workbench.ts', 'store.ts', 'artifacts.ts', 'runtime-client.ts']) {
+  for (const file of ['workbench.ts', 'store.ts', 'artifacts.ts', 'runtime-client.ts', 'process-tracker.ts']) {
     await copyFile(path.join(hostRoot, 'apps/desktop/src/main', file), path.join(main, file));
   }
   const file = path.join(main, mutation.file);

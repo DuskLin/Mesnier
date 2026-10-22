@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
+import { createServer } from 'node:http';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -142,4 +143,22 @@ lines.on('line', line => {
   assert.ok(second);
   assert.notEqual(first.pid, second.pid);
   assert.throws(() => process.kill(first.pid, 0), { code: 'ESRCH' });
+});
+
+test('模型错误正文中的 JSON 转义凭据也必须脱敏', async (t) => {
+  const key = 'fixture"secret\\token';
+  const server = createServer((_request, response) => {
+    response.writeHead(401, { 'content-type': 'application/json' });
+    response.end(JSON.stringify({ error: { message: `认证失败：${key}` } }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => { server.closeAllConnections(); await new Promise<void>((resolve) => server.close(() => resolve())); });
+  const address = server.address(); assert.ok(address && typeof address !== 'string');
+  const { workbench } = await setup(t);
+  const model = workbench.saveModelConfig({ name: '转义凭据', provider: 'openai', baseUrl: `http://127.0.0.1:${address.port}/v1`, model: 'fixture', apiKey: key });
+  const result = await workbench.testModel(model.id);
+  assert.equal(result.ok, false);
+  assert.equal(result.message.includes(key), false);
+  assert.equal(result.message.includes(JSON.stringify(key).slice(1, -1)), false, '不能把转义后的凭据当成已脱敏');
+  assert.match(result.message, /隐藏凭据/);
 });

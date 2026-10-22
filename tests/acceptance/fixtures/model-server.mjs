@@ -67,6 +67,7 @@ export async function startModelServer({ apiKey = FIXTURE_API_KEY } = {}) {
       if (scenarioUser !== -1) lastUser = scenarioUser;
       const scenario = scenarioFromPrompt(textContent(messages[lastUser]?.content));
       const resultSeen = messages.slice(lastUser + 1).some((message) => message.role === 'tool');
+      const called = messages.slice(lastUser + 1).flatMap((message) => message.tool_calls ?? []).map((tool) => tool.function?.name);
       const record = {
         index: requests.length + 1, model: payload.model, kind: scenario.kind,
         resultSeen, toolNames: (payload.tools ?? []).map((tool) => tool.function?.name),
@@ -95,15 +96,23 @@ export async function startModelServer({ apiKey = FIXTURE_API_KEY } = {}) {
         response.write(chunk({ role: 'assistant', content: '受控生成已开始，等待取消。' }));
         return;
       }
+      if (scenario.kind === 'sse-error') {
+        response.write(chunk({ role: 'assistant', content: '受控生成开始后返回错误。' }));
+        response.end(`data: ${JSON.stringify({ error: { message: scenario.echoCredential ? `rejected ${apiKey}` : (scenario.message ?? '受控流内错误'), type: 'invalid_request_error', code: 'fixture_stream_error' } })}\n\n`);
+        return;
+      }
       if (scenario.kind === 'disconnect') {
         response.write(chunk({ role: 'assistant', content: '连接即将中断。' }));
         setImmediate(() => response.destroy());
         return;
       }
-      if (['write', 'reject', 'coding', 'bash'].includes(scenario.kind) && !resultSeen) {
-        const toolName = scenario.kind === 'bash' ? 'Bash' : 'Write';
+      const needsEdit = scenario.kind === 'edit' && !called.includes('Edit');
+      if ((['write', 'reject', 'coding', 'bash'].includes(scenario.kind) && !resultSeen) || needsEdit) {
+        const toolName = scenario.kind === 'edit' ? (called.includes('Read') ? 'Edit' : 'Read') : scenario.kind === 'bash' ? 'Bash' : 'Write';
         if (!record.toolNames.includes(toolName)) throw new Error(`真实 harness 未提供 ${toolName} 工具`);
-        const args = scenario.kind === 'bash'
+        const args = toolName === 'Read' ? { path: scenario.path }
+          : toolName === 'Edit' ? { path: scenario.path, old_string: scenario.oldString, new_string: scenario.newString }
+          : scenario.kind === 'bash'
           ? { command: scenario.command, ...(scenario.cwd ? { cwd: scenario.cwd } : {}), ...(scenario.timeout ? { timeout: scenario.timeout } : {}) }
           : { path: scenario.path, content: scenario.content, mode: scenario.mode ?? 'overwrite' };
         response.write(chunk({ role: 'assistant', tool_calls: [{

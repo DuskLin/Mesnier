@@ -93,6 +93,7 @@ interface Evidence {
     恢复: ScenarioRecord;
   };
   事件摘要: EventSummary[];
+  审批摘要: ApprovalRecord[];
   增量事件数: number;
   模型名: string | null;
   模型来源: '受控协议模拟' | '外部服务（须另行确认）';
@@ -156,6 +157,7 @@ function blankEvidence(): Evidence {
       恢复: { 状态: '未运行', 说明: '尚未 close 后 resumeSession。' },
     },
     事件摘要: [],
+    审批摘要: [],
     增量事件数: 0,
     模型名: null,
     模型来源: process.env.MESNIER_PROBE_MODEL_KIND === 'controlled' ? '受控协议模拟' : '外部服务（须另行确认）',
@@ -468,6 +470,7 @@ async function runCredentialed(evidence: Evidence, dirs: { homeDir: string; conf
 
     await session.setPermission('manual');
     const approvals: ApprovalRecord[] = [];
+    evidence.审批摘要 = approvals;
     let approvedWrite = false;
     session.setApprovalHandler((request) => {
       const requested = approvalPath(request.display);
@@ -522,11 +525,11 @@ async function runCredentialed(evidence: Evidence, dirs: { homeDir: string; conf
         events.some(
           (item) => item.type === 'tool.result' && item.toolCallId === started.toolCallId && item.isError === false,
         );
-      if (!wrote || hash === null || hash !== expectedHash) {
-        note(evidence.场景.文件工具, '未覆盖', '模型没有成功调用预期路径上的 Write，或目标文件不存在、哈希与期望内容不一致。禁止用宿主写文件冒充。');
+      if (!approvedWrite || !wrote || hash === null || hash !== expectedHash) {
+        note(evidence.场景.文件工具, '未覆盖', '没有收到并批准预期 Write 请求、工具未成功，或目标文件哈希不一致。不能把跳过审批的写入记成审批链路通过。');
         return 1;
       }
-      note(evidence.场景.文件工具, '通过', `Write 的 tool.result isError=false，哈希 ${hash}`);
+      note(evidence.场景.文件工具, '通过', `预期 Write 经 handler 批准，tool.result isError=false，哈希 ${hash}`);
       evidence.恢复前哈希 = hash;
     } catch (error) {
       note(evidence.场景.模型调用, '未覆盖', `模型调用失败或没有事件：${error instanceof Error ? error.message : '未知错误'}`);
