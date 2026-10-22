@@ -1,0 +1,4 @@
+# 保留原始上游文件末尾空行，避免为格式化扩大派生补丁。
+packages/** whitespace=-blank-at-eof
+# unified diff 的空白上下文行必须包含一个空格前缀。
+patches/*.patch -whitespace
