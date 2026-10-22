@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test ../../tests/acceptance/probe-regressions.test.mjs",
+    "test:mutations": "node ../../tests/acceptance/check-regression-mutations.mjs"
+  }
+}
