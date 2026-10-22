@@ -107,7 +107,7 @@ export function Chat({ snapshot, session, draft, setDraft, selectedModelId, onSe
           {active ? <Button className="send" variant="danger" busy={busy(`stop:${active.id}`)} disabled={active.status === 'cancelling'} onClick={() => onStop(active)}><Square size={12} />{active.status === 'cancelling' ? '正在停止' : '停止执行'}</Button> : <Button className="send" variant="primary" disabled={!canSend} busy={busy(`send:${session.id}`)} onClick={onSend}><ArrowUp size={16} />发送</Button>}
         </div>
       </div>
-      <div className="composer-note"><span>{active ? '当前执行期间不追加指令；草稿会保留供下一次提交。' : !snapshot.runtime.ready ? '运行时尚未就绪，请在设置中查看诊断。' : !model ? '先配置模型服务，再开始工作。' : '写入文件与命令执行前会请求授权。'}</span><span className="keyboard-hint"><kbd>Enter</kbd> 发送 · <kbd>Shift Enter</kbd> 换行</span></div>
+      <div className="composer-note"><span>{active ? '当前执行期间不追加指令；草稿会保留供下一次提交。' : !snapshot.runtime.ready ? '运行时尚未就绪，请在设置中查看诊断。' : !model ? '先配置模型服务，再开始工作。' : '文件修改与命令执行需批准。'}</span><span className="keyboard-hint"><kbd>Enter</kbd> 发送 · <kbd>Shift Enter</kbd> 换行</span></div>
     </div>
   </>;
 }
