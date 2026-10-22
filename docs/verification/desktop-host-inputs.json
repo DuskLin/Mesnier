@@ -1,0 +1,33 @@
+{
+  "baseCommit": "e23ab6a9b7230d997a5013eff23d2a3badc06c93",
+  "scope": "desktop host, renderer integration and host contract tests; runtime not yet integrated",
+  "files": {
+    ".gitignore": "3203daa6bde59115e836b12909d928948ec4edec2c73ec07a5590a35d365df56",
+    "apps/desktop/index.html": "5273706ba27c355feb683c2a2394e2e5470515ddc15ff710e1ce1acbcb07e2aa",
+    "apps/desktop/src/main/artifacts.ts": "9807ed4f3500fb9ac904e4fe7cb8a61146d249bc81569e707ca6efca1064b009",
+    "apps/desktop/src/main/index.ts": "c0c645bcf827fe0d5db6bd7882c51c98bfa9f33256d002fcbbf05dcc49a579aa",
+    "apps/desktop/src/main/runtime-client.ts": "851b088b28c7d52f460ef2cd874d03f39df227f2e1e75a8a4b574d0013b3ccec",
+    "apps/desktop/src/main/store.ts": "3ce77defddc94fce1390c4bdf83ef8e359b56897c2ce038bd82a5a2dfd974b94",
+    "apps/desktop/src/main/workbench.ts": "d76aa71d00656dd81a5dc770170ac73539e662d36c0788aa1f8021826702b295",
+    "apps/desktop/src/preload/index.ts": "a992c745c88c6aa138b10e69d4439d0408b5a07c135e8e99176a65de5f23f522",
+    "apps/desktop/src/renderer/App.tsx": "f4ad0f0f6bf0df7ec3b2f03e5aa6119027dcc3e47b0bdb5d4dbc8d7c84845587",
+    "apps/desktop/src/renderer/components/Board.tsx": "f9155337a61d1dbe323a96b06afc1f24684d5aef8a7d1b8b9bb11fd85887812d",
+    "apps/desktop/src/renderer/components/Chat.tsx": "35f64f0da4fc7351d26588216942b755cea9185252f27c7f2feeeb38eb8b0cd2",
+    "apps/desktop/src/renderer/components/Dialogs.tsx": "4fe0c23879de51dc3095b33e1d66a700ab4f397beb5806e1d8e577ab682a33a7",
+    "apps/desktop/src/renderer/components/Settings.tsx": "7ff0bd1d0d72854c54cfec65a8da5020219224091715fca9fc492a78e9cef150",
+    "apps/desktop/src/renderer/components/ui.tsx": "d8e9984568a1fc848abe847e90bbb42f853c940cc49b36fd7da1f3ca7fc31da7",
+    "apps/desktop/src/renderer/env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+    "apps/desktop/src/renderer/main.tsx": "4a27d87500f0f61a29f0d1396111fa6fe646005787005188a8476efe4ac5a862",
+    "apps/desktop/src/renderer/model.ts": "68d7428c0d3eda49fdde5245d015f3038207b868f49da2941006ce0601f4f75f",
+    "apps/desktop/src/renderer/styles.css": "a1dd2bdf2e1a067946e0f09834601a60013668900b8706c0e1ac6eada2b560b6",
+    "package-lock.json": "efb4cc2b014eaab051539a5e92117ed66e918f35ad664fedb9c0ae9074b39e4e",
+    "package.json": "2fef0306d1dd0936eee45820d7430a803a6ac27e3597a06c1824c47096362f5c",
+    "packages/shared/package.json": "b2c5f6edec114a3dc1f70714c931c2d915079efd7cf8ff49251b1029086beb3a",
+    "packages/shared/src/index.ts": "c5534e84be096edb39cabeb17453f7b82e6a17475ef4d2dcc910a26449b5466d",
+    "scripts/build-app.mjs": "27c17f9645aeec8b79c06b6b984c1565eae8931fca0ef69358a80e25296f9f5c",
+    "scripts/dev.mjs": "4ba88d8050c4871319bc9870846fc0d2dbee3309ca1d5dfb9427a48666c8130d",
+    "scripts/package.mjs": "e5eee26e30ef163572a64e7d6f1240401a7468fcac1b3808a74c9eaab15f7c55",
+    "tests/host/lifecycle.test.ts": "b03a6fa3fa1b591c6fad5a4a9a4f84d7d7c808ef35d7e748079ac550bc2872fe",
+    "tsconfig.json": "a7c54141d95026a8e99e2574b749fa0fd20b76d34ff0008a52730282db7ecc2b"
+  }
+}

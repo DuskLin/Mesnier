@@ -175,7 +175,18 @@ Mesnier/
         └── logo-prompt.txt     # Logo 生成方式与提示词
 ```
 
-目前没有应用启动、构建或安装命令；后续随工程初始化补充。
+已建立 Electron + React + TypeScript 工程。当前开发环境使用 Node.js 24.15.0，按锁文件安装依赖：
+
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build:app
+# 测试使用独立数据目录，不使用真实 ~/.mesnier。
+MESNIER_HOME=/绝对路径/测试数据 npm start
+```
+
+`build:app` 构建桌面宿主与静态界面；完整运行依赖 `build/runtime` 内置运行时分发目录。完整构建、安装包与端到端验收正在本次 OpenSpec 变更中完成，尚不能仅凭界面启动认定成品已交付。阶段证据见 [桌面宿主验证](docs/verification/desktop-host-2026-10-22.md)。
 
 Logo 以字母 **M** 为主体，将对话气泡与看板卡片融入同一个折叠形态，表达两种工作模式的连接。当前素材为 PNG，平台应用图标与其他品牌变体待后续补齐。
 
@@ -212,7 +223,7 @@ openspec validate --all --strict --no-interactive
 
 提交前请阅读 [贡献指南](CONTRIBUTING.md)，按变更影响选择检查，并使用 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md) 记录问题、修改内容、验证证据、风险与未覆盖项。Agent 同时遵循 [协作约定](AGENTS.md)。
 
-当前可执行 Git 差异、文档链接与引用检查，以及 OpenSpec 验证；尚无应用构建、测试命令或 CI 工作流。模板中的条件项需说明不适用原因，不将静态检查或空规格验证表述为真实功能验证通过。
+当前可执行类型检查、宿主测试、桌面构建、Git 差异、文档链接与引用检查，以及 OpenSpec 验证；尚未配置 CI 工作流。模板中的条件项需说明不适用原因，不将静态检查或空规格验证表述为真实功能验证通过。
 
 ## 底座与参考来源
 
