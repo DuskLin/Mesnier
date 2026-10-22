@@ -126,6 +126,12 @@ export async function startModelServer({ apiKey = FIXTURE_API_KEY } = {}) {
         response.write(chunk({ content: text.slice(4) }));
         response.write(chunk({}, 'stop'));
       }
+      if (scenario.kind === 'text' && scenario.usage !== undefined) {
+        response.write(`data: ${JSON.stringify({
+          id: 'chatcmpl-mesnier-fixture', object: 'chat.completion.chunk', created: 0,
+          model: 'mesnier-fixture', choices: [], usage: scenario.usage,
+        })}\n\n`);
+      }
       response.end('data: [DONE]\n\n');
     } catch (error) {
       if (!response.headersSent) response.writeHead(400, { 'content-type': 'application/json' });
