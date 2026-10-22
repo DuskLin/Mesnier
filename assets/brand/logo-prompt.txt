@@ -1,0 +1,10 @@
+Mesnier Logo — 初版
+生成方式：内置 image_gen；透明背景；原始 PNG。
+设计概念：字母 M 融合对话气泡与看板卡片，表达两种工作模式共用一个工作空间。
+
+Use case: logo-brand
+Asset type: app logo for Mesnier, a general-purpose AI agent workspace for Work and Coding.
+Primary request: Create one original, polished, minimal app icon. A distinctive geometric M monogram built from two interlocking folded forms, suggesting conversation and kanban workflows joining in one continuous workspace. Make the symbol read as a bold M first, with a subtle conversational notch and structured card-like planes, not a collage of small icons.
+Style/medium: precise vector-like flat brand design rendered as a high-resolution square PNG. Strong silhouette, consistent optical weight, carefully balanced negative space, readable at small sizes. Choose a restrained coherent accent palette appropriate for a professional productivity app.
+Composition/framing: one centered standalone symbol with generous but not excessive clear margins, transparent background, no container tile. The symbol should occupy approximately 75 percent of the square canvas. No typography or wordmark.
+Constraints: original mark; do not imitate the logos of ZCode, Multica, or other existing products. No robots, brains, sparkles, circuit patterns, code brackets, mockup, paper texture, watermark, tiny decorative detail, drop shadows or surrounding text.
