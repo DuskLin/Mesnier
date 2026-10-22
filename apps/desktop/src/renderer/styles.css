@@ -281,9 +281,11 @@ h1, h2, h3, h4, p { margin: 0; }
   .brand { padding-left: 7px; }
   .brand .brand-label { display: none; }
   .breadcrumbs { display: none; }
+  .conversation { padding-left: 22px; padding-right: 22px; }
+}
+@media (max-width: 900px) {
   .inspector { position: absolute; right: 0; top: 77px; bottom: 0; z-index: 20; box-shadow: -8px 0 30px #172c1910; }
   .shell.mac .inspector { top: 88px; }
-  .conversation { padding-left: 22px; padding-right: 22px; }
 }
 @media (max-width: 750px) {
   .sidebar { width: 180px; min-width: 180px; }
