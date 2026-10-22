@@ -152,6 +152,7 @@ flowchart TB
 ```text
 Mesnier/
 ├── AGENTS.md                  # 项目协作约定
+├── LESSONS.md                 # 反复修改与 bug 修复的经验记录
 ├── README.md
 ├── .agents/skills/            # OpenSpec 生成的 Codex 技能
 ├── openspec/
