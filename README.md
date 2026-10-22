@@ -11,7 +11,7 @@ Mesnier 希望将对话式 Agent 与任务看板放进同一个 APP：你可以�
 
 Mesnier 不自带 Agent CLI。应用负责工作空间、交互、任务编排与结果管理，由用户选择的第三方 Agent 运行时完成实际工作，并提供检测、快捷安装、认证引导与运行管理。
 
-> **项目状态：产品规划阶段。** 当前仓库只有 README 与品牌素材，尚无可运行的应用。以下功能、平台和运行时支持均为建设目标，不代表已经实现或验证兼容。
+> **项目状态：产品规划阶段。** 当前仓库包含产品说明、品牌素材和 OpenSpec 协作配置，尚无可运行的应用。以下功能、平台和运行时支持均为建设目标，不代表已经实现或验证兼容。
 
 ## 为什么做 Mesnier
 
@@ -151,7 +151,13 @@ flowchart TB
 
 ```text
 Mesnier/
+├── AGENTS.md                  # 项目协作约定
 ├── README.md
+├── .agents/skills/            # OpenSpec 生成的 Codex 技能
+├── openspec/
+│   ├── config.yaml            # 项目上下文与规格编写规则
+│   ├── specs/                 # 归档后的能力规格（当前为空）
+│   └── changes/               # 进行中的变更及 archive/ 归档目录
 └── assets/
     └── brand/
         ├── mesnier-logo.png    # 透明背景的初版 Logo
@@ -161,6 +167,35 @@ Mesnier/
 目前没有应用启动、构建或安装命令；后续随工程初始化补充。
 
 Logo 以字母 **M** 为主体，将对话气泡与看板卡片融入同一个折叠形态，表达两种工作模式的连接。当前素材为 PNG，平台应用图标与其他品牌变体待后续补齐。
+
+## OpenSpec 协作流程
+
+项目使用 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 管理需求、设计和实施任务，采用 `spec-driven` 工作流，已启用 Codex 集成。当前配置由 OpenSpec **1.8.0** 初始化。
+
+在已安装 Node.js 20.19.0 或更新版本的环境中，可安装相同版本的 CLI：
+
+```bash
+npm install -g @fission-ai/openspec@1.8.0
+```
+
+克隆仓库后即可使用已提交的配置与技能，无需重新初始化。重新打开 Codex 会话后，可使用以下技能：
+
+1. `$openspec-explore`：梳理需求、约束与方案。
+2. `$openspec-propose <变更描述>`：生成提案、规格、设计与任务。
+3. `$openspec-apply-change <变更名>`：按变更任务实施并验证。
+4. `$openspec-archive-change <变更名>`：完成后归档变更并同步能力规格。
+
+需要调整进行中的变更时使用 `$openspec-update-change`；需要在归档前同步规格时使用 `$openspec-sync-specs`。
+
+常用检查命令：
+
+```bash
+openspec list
+openspec list --specs
+openspec validate --all --strict --no-interactive
+```
+
+当前尚无能力规格或功能变更，验证命令会提示没有可验证的条目。README 中的路线图保留为规划，具体能力在后续变更实施、验证并归档后进入 `openspec/specs/`。升级 CLI 后运行 `openspec update`，并检查生成文件的差异。
 
 ## 灵感来源
 
