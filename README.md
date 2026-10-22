@@ -158,8 +158,11 @@ flowchart TB
 ```text
 Mesnier/
 ├── AGENTS.md                  # 项目协作约定
+├── CONTRIBUTING.md            # 贡献流程与 PR 提交前检查
 ├── LESSONS.md                 # 反复修改与 bug 修复的经验记录
 ├── README.md
+├── .github/
+│   └── PULL_REQUEST_TEMPLATE.md # PR 说明与检查清单模板
 ├── .agents/skills/            # OpenSpec 生成的 Codex 技能
 ├── openspec/
 │   ├── config.yaml            # 项目上下文与规格编写规则
@@ -204,6 +207,12 @@ openspec validate --all --strict --no-interactive
 ```
 
 当前有 `adopt-kimi-agent-foundation` 规划变更，`openspec/specs/` 仍为空。严格验证用于检查该变更的规格结构与一致性，不代表应用功能通过验收；能力在实施、验证并归档后才进入 `openspec/specs/`。升级 CLI 后运行 `openspec update`，并检查生成文件的差异。
+
+## 参与贡献与 PR 检查
+
+提交前请阅读 [贡献指南](CONTRIBUTING.md)，按变更影响选择检查，并使用 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md) 记录问题、修改内容、验证证据、风险与未覆盖项。Agent 同时遵循 [协作约定](AGENTS.md)。
+
+当前可执行 Git 差异、文档链接与引用检查，以及 OpenSpec 验证；尚无应用构建、测试命令或 CI 工作流。模板中的条件项需说明不适用原因，不将静态检查或空规格验证表述为真实功能验证通过。
 
 ## 底座与参考来源
 
