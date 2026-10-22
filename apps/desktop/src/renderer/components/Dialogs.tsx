@@ -69,7 +69,7 @@ export function ArtifactDialog({ artifact, bridge, onClose }: { artifact: Artifa
     return () => { current = false; };
   }, [artifact.id, bridge, version]);
   const open = async () => { try { await bridge.openArtifact(artifact.id); } catch (cause) { setError(readableError(cause)); } };
-  const copy = async () => { try { await navigator.clipboard.writeText(content?.text ?? ''); setCopied(true); } catch { setError('无法访问剪贴板，请选择并手动复制内容。'); } };
+  const copy = async () => { try { await bridge.copyText(content?.text ?? ''); setCopied(true); } catch { setError('无法访问剪贴板，请选择并手动复制内容。'); } };
   return <Modal title={artifact.relativePath} description="查看当前文件内容；文件来源与对应执行记录始终保留。" wide onClose={onClose}>
     <p className="artifact-path mono">{artifact.path}<br />来源执行：{artifact.runId}</p>
     {error || content?.error ? <div className="inline-notice error" role="alert"><CircleAlert size={16} />{error || content?.error}</div> : !content ? <div className="loading-state" style={{ height: 160 }}><LoaderCircle className="spin" size={24} />正在读取文件…</div> : content.binary ? <div className="inline-notice"><FolderOpen size={17} />此文件无法作为文本预览，可在文件夹中定位后使用系统应用查看。</div> : <div className="artifact-preview"><pre>{content.text ?? '文件内容为空。'}</pre></div>}
