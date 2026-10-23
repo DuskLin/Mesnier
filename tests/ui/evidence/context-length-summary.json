@@ -1,0 +1,525 @@
+{
+  "sourceBase": "681d755cb1f25e3296cffd048ee090fec41a6455",
+  "sourceStatus": "基准加未提交 Settings.tsx、package.json、package-lock.json；README/LESSONS同步文字不影响本入口",
+  "sourceFiles": {
+    "apps/desktop/src/renderer/components/Settings.tsx": "479efa17562346a4e775ccdfee1562a85ebe4545999abc41ed0b025875b41b91",
+    "package.json": "46ed64560d0718c0405b92952427a052e63cf72a5d7efee336b0597d0c7c8afa",
+    "package-lock.json": "79f9271605693f3369ff0f42bb42d5c5fb83cd4f9bef6ebb06294449a81f897b"
+  },
+  "negative": {
+    "kind": "real-electron-context-length-controlled-service",
+    "startedAt": "2026-10-23T01:48:52.385Z",
+    "sourceBase": "681d755cb1f25e3296cffd048ee090fec41a6455",
+    "testSourceSha256": "6dc137402f1d68206e83b4fdd881fb3e4c9fc9dd58296785667195a749adefdc",
+    "buildHashes": {
+      "package.json": "d6501909e79c75bed914ab5a0720c64a54e5d2ce57f75b57cdb683d10b299b4c",
+      "dist/main/index.cjs": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c",
+      "dist/main/index.cjs.map": "9df1729dc12fa0d08dc66d8c9b31f4877c920cb871d3f25ec73514a7a63268d0",
+      "dist/preload/index.cjs": "1fd034e4256e8b3438c5b077325e5f449b3af06873f39530a2ac71eb233db2a8",
+      "dist/preload/index.cjs.map": "8c0776a192a7bd9796dbcf0d39e41c08c3992bb3f1b5381bbce418889cde049e",
+      "dist/renderer/assets/index-BICAMlQ0.css": "e1128832bd18b331f2460632b9045ac5f5c9cfad3c1068f224e9990dae0cc603",
+      "dist/renderer/assets/index-TwdAAzQ0.js": "e680806cd1dd2096a58621a14a5e68747366d34422f8a547a228adf4310437f0",
+      "dist/renderer/assets/mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184",
+      "dist/renderer/index.html": "e5799d7ac518be21d62f8adaf36c3d2d714ffc21a974a60e4dc65dba3619aaa3"
+    },
+    "environment": {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "node": "v22.22.0",
+      "electron": "41.0.3"
+    },
+    "checks": [],
+    "pageErrors": [],
+    "passed": false,
+    "lastAttempt": {
+      "provider": "openai",
+      "value": 200000,
+      "action": "保存并验证",
+      "validity": {
+        "valid": false,
+        "stepMismatch": true,
+        "min": "1024",
+        "max": "",
+        "step": "1024"
+      },
+      "modelCount": 0,
+      "requestCount": 0
+    },
+    "error": "200000 应允许保存并验证；浏览器实际 validity={\"valid\":false,\"stepMismatch\":true,\"min\":\"1024\",\"max\":\"\",\"step\":\"1024\"}\n\nfalse !== true\n",
+    "finishedAt": "2026-10-23T01:48:57.093Z",
+    "exitCode": 1
+  },
+  "positive": {
+    "kind": "real-electron-context-length-controlled-service",
+    "startedAt": "2026-10-23T01:48:52.385Z",
+    "sourceBase": "681d755cb1f25e3296cffd048ee090fec41a6455",
+    "testSourceSha256": "6dc137402f1d68206e83b4fdd881fb3e4c9fc9dd58296785667195a749adefdc",
+    "buildHashes": {
+      "package.json": "46ed64560d0718c0405b92952427a052e63cf72a5d7efee336b0597d0c7c8afa",
+      "dist/main/index.cjs": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c",
+      "dist/main/index.cjs.map": "9df1729dc12fa0d08dc66d8c9b31f4877c920cb871d3f25ec73514a7a63268d0",
+      "dist/preload/index.cjs": "1fd034e4256e8b3438c5b077325e5f449b3af06873f39530a2ac71eb233db2a8",
+      "dist/preload/index.cjs.map": "8c0776a192a7bd9796dbcf0d39e41c08c3992bb3f1b5381bbce418889cde049e",
+      "dist/renderer/assets/index-7XrFoU6x.js": "b3760690ba1e5b7970486bbacafda9924712d46f9e132cff088a58a2cd93ddbb",
+      "dist/renderer/assets/index-BICAMlQ0.css": "e1128832bd18b331f2460632b9045ac5f5c9cfad3c1068f224e9990dae0cc603",
+      "dist/renderer/assets/mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184",
+      "dist/renderer/index.html": "06e19d2f0ddeb0858a051c855cd56852e7806ae0ee3a4e045bc2d8114568eb90"
+    },
+    "environment": {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "node": "v22.22.0",
+      "electron": "41.0.3"
+    },
+    "checks": [
+      {
+        "provider": "openai",
+        "value": 200000,
+        "action": "保存并验证",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 200000,
+        "action": "保存配置",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 1024,
+        "action": "保存并验证",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 1024,
+        "action": "保存配置",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 10000000,
+        "action": "保存并验证",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 10000000,
+        "action": "保存配置",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 100000,
+        "action": "保存并验证",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 100000,
+        "action": "保存配置",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 100000.5,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 1023,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 10000001,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 200000,
+        "action": "保存并验证",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 200000,
+        "action": "保存配置",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 1024,
+        "action": "保存并验证",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 1024,
+        "action": "保存配置",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 10000000,
+        "action": "保存并验证",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 10000000,
+        "action": "保存配置",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 100000,
+        "action": "保存并验证",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 100000,
+        "action": "保存配置",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 100000.5,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 1023,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 10000001,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "action": "重新打开设置保持精确上下文值",
+        "persisted": 100000,
+        "passed": true
+      }
+    ],
+    "pageErrors": [],
+    "passed": true,
+    "lastAttempt": {
+      "provider": "openai_responses",
+      "value": 100000,
+      "action": "保存并验证",
+      "validity": {
+        "valid": true,
+        "stepMismatch": false,
+        "min": "1024",
+        "max": "10000000",
+        "step": "1"
+      },
+      "modelCount": 1,
+      "requestCount": 8
+    },
+    "connectionRequests": [
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      }
+    ],
+    "finishedAt": "2026-10-23T01:48:58.550Z",
+    "exitCode": 0
+  },
+  "packaged": {
+    "kind": "real-electron-context-length-controlled-service",
+    "startedAt": "2026-10-23T01:48:52.394Z",
+    "sourceBase": "681d755cb1f25e3296cffd048ee090fec41a6455",
+    "testSourceSha256": "6dc137402f1d68206e83b4fdd881fb3e4c9fc9dd58296785667195a749adefdc",
+    "buildHashes": {
+      "Contents/Resources/app.asar": "1c28d4c5b8f3eeb511cbd6536560943ccdfda83e666655ce621c692ab6b24b14",
+      "Contents/MacOS/Mesnier": "c21bb163c4196145634d0ce363ced9d062d1dc8dcd233545cbdeeb2ee2f6633b"
+    },
+    "environment": {
+      "platform": "darwin",
+      "architecture": "arm64",
+      "node": "v22.22.0",
+      "electron": "41.0.3"
+    },
+    "checks": [
+      {
+        "provider": "openai",
+        "value": 200000,
+        "action": "保存并验证",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 200000,
+        "action": "保存配置",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 1024,
+        "action": "保存并验证",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 1024,
+        "action": "保存配置",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 10000000,
+        "action": "保存并验证",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 10000000,
+        "action": "保存配置",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 100000,
+        "action": "保存并验证",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 100000,
+        "action": "保存配置",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 100000.5,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 1023,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai",
+        "value": 10000001,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 200000,
+        "action": "保存并验证",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 200000,
+        "action": "保存配置",
+        "persisted": 200000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 1024,
+        "action": "保存并验证",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 1024,
+        "action": "保存配置",
+        "persisted": 1024,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 10000000,
+        "action": "保存并验证",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 10000000,
+        "action": "保存配置",
+        "persisted": 10000000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 100000,
+        "action": "保存并验证",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 100000,
+        "action": "保存配置",
+        "persisted": 100000,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 100000.5,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 1023,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "provider": "openai_responses",
+        "value": 10000001,
+        "action": "两个保存按钮及回车",
+        "rejected": true,
+        "passed": true
+      },
+      {
+        "action": "重新打开设置保持精确上下文值",
+        "persisted": 100000,
+        "passed": true
+      }
+    ],
+    "pageErrors": [],
+    "passed": true,
+    "application": {
+      "isPackaged": true,
+      "executable": "release/mac-arm64/Mesnier.app/Contents/MacOS/Mesnier",
+      "resources": "release/mac-arm64/Mesnier.app/Contents/Resources",
+      "version": "0.1.1"
+    },
+    "lastAttempt": {
+      "provider": "openai_responses",
+      "value": 100000,
+      "action": "保存并验证",
+      "validity": {
+        "valid": true,
+        "stepMismatch": false,
+        "min": "1024",
+        "max": "10000000",
+        "step": "1"
+      },
+      "modelCount": 1,
+      "requestCount": 8
+    },
+    "connectionRequests": [
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      },
+      {
+        "provider": "openai_responses",
+        "kind": "connection-check"
+      }
+    ],
+    "packagedFilesUnchanged": true,
+    "finishedAt": "2026-10-23T01:49:08.907Z",
+    "exitCode": 0
+  },
+  "scope": "真实Electron与宿主设置入口；回环HTTP服务、独立MESNIER_HOME。开发构建副本未携带Agent运行时；打包版直接运行release应用，仅核对设置，不执行Agent任务、不读取用户配置。"
+}
