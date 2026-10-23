@@ -1,0 +1,173 @@
+{
+  "version": "0.1.3",
+  "previousVersion": "0.1.2",
+  "sourceBase": "ef2a2aa0eb805a79f3e6cad52b505611e66e241f",
+  "sourceHashes": {
+    "package.json": "11440dad8e0d26810424cc7176751cc87af6ec10cc88c227b06cecdb1886b478",
+    "package-lock.json": "f0064682578a958e859c13eeb0eddb824db156d0fbb3cff67fa8ae518e9ea905",
+    "apps/desktop/src/renderer/App.tsx": "e893252ca5b52c10f4f527aec087ee93eb0d1766bea72b82b7b13848e12b73df",
+    "apps/desktop/src/renderer/components/Sidebar.tsx": "2962d5273827b1f09c3afdad827776bf9fe037cd2c8ef160fc3c949190b151aa",
+    "apps/desktop/src/renderer/navigation.ts": "8b76898ee8dafec41c4abf5fd6787ce1ba985f373c822e0ac4b17a8931974afd",
+    "apps/desktop/src/renderer/styles.css": "c342a4a1ba13752da6693af383bc4d0a000e396b66e8905bd7f32faaa0c38b8c"
+  },
+  "previousAsarSha256": "a4bfa0b91a33a6f38914fdd002951b16fbd6a99c732c1d8bb7d1255c38624e2c",
+  "installedAsarSha256": "9deaf5b49e090cbaf8790deefddbd247880aeafdbb89ecb111ad908e3a9204f3",
+  "artifacts": {
+    "Mesnier-0.1.3-arm64-mac.zip": "2adec354ac41187a16d4274e2a0c373b8c39599a7a2f010cf1aa25ba1133fed5",
+    "Mesnier-0.1.3-arm64.dmg": "f6bfb330508c454871e7c111196dd8c24d7d714ac06225275b0b2d0833199ac0"
+  },
+  "installed": true,
+  "userDataPreserved": true,
+  "credentialFileUnchanged": true,
+  "normalLaunchVerified": true,
+  "runtimeReady": true,
+  "installedSidebarChecks": 5,
+  "sidebarTest": {
+    "passed": true,
+    "checks": [
+      "264px侧栏、32px嵌套会话行、14/12px文字与中性选中层级",
+      "跨项目前后导航保留草稿，新选择截断前进分支",
+      "搜索越过默认条数限制，项目/最近更新视图及项目展开可用",
+      "收起恢复、焦点、偏好持久化、选中项可见且导航不创建执行",
+      "最小窗口深色侧栏无溢出，底部设置保持可见"
+    ],
+    "pageErrors": [],
+    "sourceHashes": {
+      "apps/desktop/src/renderer/App.tsx": "e893252ca5b52c10f4f527aec087ee93eb0d1766bea72b82b7b13848e12b73df",
+      "apps/desktop/src/renderer/components/Sidebar.tsx": "2962d5273827b1f09c3afdad827776bf9fe037cd2c8ef160fc3c949190b151aa",
+      "apps/desktop/src/renderer/navigation.ts": "8b76898ee8dafec41c4abf5fd6787ce1ba985f373c822e0ac4b17a8931974afd",
+      "apps/desktop/src/renderer/styles.css": "c342a4a1ba13752da6693af383bc4d0a000e396b66e8905bd7f32faaa0c38b8c",
+      "tests/ui/sidebar.test.mjs": "a000fac3117d133e19e398247e63d66ccf9b401345f64293b073f8310c14d87b"
+    },
+    "buildHashes": {
+      "index-BgKyj5nq.js": "57b544c698f8c3d2d73a4d18283a844b20dda9c944d87636ef3e37441c591655",
+      "index-Cu9DFOaX.css": "c1ad4e7457e7da7b3df4ed88ba743dc6376cdfa28e82b1fd955ff9efb8414a0c",
+      "mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184"
+    },
+    "screenshots": [
+      "01-sidebar-light.png",
+      "02-workbench-light.png",
+      "03-sidebar-dark.png",
+      "04-narrow-dark.png"
+    ],
+    "application": {
+      "packaged": true,
+      "version": "0.1.3",
+      "executable": "/Applications/Mesnier.app/Contents/MacOS/Mesnier"
+    },
+    "asarHash": "9deaf5b49e090cbaf8790deefddbd247880aeafdbb89ecb111ad908e3a9204f3"
+  },
+  "workflowTest": {
+    "kind": "real-electron-controlled-model",
+    "checks": [
+      {
+        "name": "首次启动无演示记录，深浅主题可切换",
+        "startedAt": "2026-10-23T03:54:31.940Z",
+        "passed": true
+      },
+      {
+        "name": "模型设置可创建与编辑，不向快照泄露密钥",
+        "startedAt": "2026-10-23T03:54:32.132Z",
+        "passed": true
+      },
+      {
+        "name": "真实普通目录可创建项目，会话草稿保留且新建任务不自动执行",
+        "startedAt": "2026-10-23T03:54:32.537Z",
+        "passed": true
+      },
+      {
+        "name": "看板筛选、任务编辑和会话重命名保留关联身份",
+        "startedAt": "2026-10-23T03:54:32.903Z",
+        "passed": true
+      },
+      {
+        "name": "新增默认模型立即用于后续选择，删除后回到保留的模型",
+        "startedAt": "2026-10-23T03:54:33.155Z",
+        "passed": true
+      },
+      {
+        "name": "可发送状态下中文组合输入不发送，会话切换保留各自草稿",
+        "startedAt": "2026-10-23T03:54:33.449Z",
+        "passed": true
+      },
+      {
+        "name": "最小窗口不溢出应用，主题和历史在真实重启后恢复",
+        "startedAt": "2026-10-23T03:54:33.706Z",
+        "passed": true
+      },
+      {
+        "name": "Chat → Board → Chat 保持同一审批与执行，允许后真实文件写入且进入待验收",
+        "startedAt": "2026-10-23T03:54:35.162Z",
+        "passed": true
+      },
+      {
+        "name": "真实产物可预览与复制，丢失文件明确报错，明确验收才成为已完成",
+        "startedAt": "2026-10-23T03:54:35.882Z",
+        "passed": true
+      },
+      {
+        "name": "拒绝真实 Write 授权不写文件，界面保留拒绝事实",
+        "startedAt": "2026-10-23T03:54:36.360Z",
+        "passed": true
+      },
+      {
+        "name": "执行中修改默认模型保留启动快照，取消确认且保留已经写入的文件",
+        "startedAt": "2026-10-23T03:54:36.813Z",
+        "passed": true
+      },
+      {
+        "name": "显式重试生成新身份，使用新模型且不覆盖原取消记录",
+        "startedAt": "2026-10-23T03:54:37.637Z",
+        "passed": true
+      },
+      {
+        "name": "模型失败传播到真实界面，服务回显的凭据被脱敏",
+        "startedAt": "2026-10-23T03:54:38.833Z",
+        "passed": true
+      },
+      {
+        "name": "正常关闭保留已确认取消，重启不重放，显式新输入恢复同一会话",
+        "startedAt": "2026-10-23T03:54:39.180Z",
+        "passed": true
+      },
+      {
+        "name": "实际强杀应用后未确认执行标为中断，无孤立运行时和自动重放",
+        "startedAt": "2026-10-23T03:54:40.996Z",
+        "passed": true
+      },
+      {
+        "name": "Git Coding 项目从看板启动，拒绝不改文件，批准后留下真实代码差异",
+        "startedAt": "2026-10-23T03:54:42.604Z",
+        "passed": true
+      },
+      {
+        "name": "缺失用量显示未提供，真实零和含缓存的正数保留实际值",
+        "startedAt": "2026-10-23T03:54:44.232Z",
+        "passed": true
+      }
+    ],
+    "pageErrors": [],
+    "passed": true,
+    "buildHashes": {
+      "dist/main/index.cjs": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c",
+      "dist/preload/index.cjs": "1fd034e4256e8b3438c5b077325e5f449b3af06873f39530a2ac71eb233db2a8",
+      "dist/renderer/index.html": "c2bb8cd462d4a3aa603364a6ccc2fde452590a51b3ec8b21fcd1fb2381bebcd9",
+      "dist/renderer/assets/index-BgKyj5nq.js": "57b544c698f8c3d2d73a4d18283a844b20dda9c944d87636ef3e37441c591655",
+      "dist/renderer/assets/index-Cu9DFOaX.css": "c1ad4e7457e7da7b3df4ed88ba743dc6376cdfa28e82b1fd955ff9efb8414a0c",
+      "dist/renderer/assets/mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184",
+      "build/runtime/worker.mjs": "c6bea9a81361647a345cae3dfeccc4125dc138f5e6ede69e49efa7ece65cc189",
+      "build/runtime/bin/node": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32"
+    },
+    "runtimeTree": {
+      "sha256": "a77851f73b1e339f0aba97a9c88c4fa90160ac60dad9ae1efe6f094c7a29c37d",
+      "files": 23639
+    },
+    "testSourceSha256": "8198876dcab866d5ba8c74e1b5b54c92b51f47dc05a743926966d8ea6534e7a2"
+  },
+  "screenshotHashes": {
+    "before.png": "74cc364f3773be25b5ad7b0771715317e8b91811092e05c9b5ddfc52f04a014a",
+    "after-dark.png": "754d824eb74e70b9c2bd1c96e651f83f1caef48beda30070046e269a121f9d13",
+    "after-light.png": "b36cad40c4e03d50ee1440625e97dcaac45f74c304d115768a85ac7f2cc22291",
+    "narrow-dark.png": "bd54c22db77d9a061c955be121ebe9d7580762fedefc446b44b01faf6ec98671"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "version": "0.1.2",
+  "previousVersion": "0.1.1",
+  "sourceBase": "ef2a2aa0eb805a79f3e6cad52b505611e66e241f",
+  "sourceHashes": {
+    "package.json": "7658ad5c1e2c610e5bf6221a4f75bc58ed5af6a34f57c64021a5e96efe84196e",
+    "package-lock.json": "27606244844ab64db3ca2515ee8c21ad22fc92a1098091a6821fb88db1265b61",
+    "apps/desktop/src/renderer/App.tsx": "47a87e18077d92ef66b848755b2b6561f285c12c56dcaefe89ceec4919cd4ddf",
+    "apps/desktop/src/renderer/components/Board.tsx": "8cebffe56f0cc01028b2c753d78a3499987e2c1c089b935b5e686111e969985d",
+    "apps/desktop/src/renderer/styles.css": "52550cd9336d44643f75d57a938e41ef04050bc2b64a1a319a5b2e00cc0caec4"
+  },
+  "previousAsarSha256": "1c28d4c5b8f3eeb511cbd6536560943ccdfda83e666655ce621c692ab6b24b14",
+  "installedAsarSha256": "a4bfa0b91a33a6f38914fdd002951b16fbd6a99c732c1d8bb7d1255c38624e2c",
+  "artifacts": {
+    "Mesnier-0.1.2-arm64.dmg": "e8ba414c80796f421602b4acf703ed01e6bc83dbbfff21df7fa78c2234660226",
+    "Mesnier-0.1.2-arm64-mac.zip": "78025549581b89f17a17b6dfb0d8945c43b82069aba39c6ed0564cca6d664be3"
+  },
+  "installed": true,
+  "userDataPreserved": true,
+  "credentialFileUnchanged": true,
+  "normalLaunchVerified": true,
+  "installedSettingsTest": true,
+  "packagedSettingsChecks": 23,
+  "liveUiRuntimeReady": true
+}

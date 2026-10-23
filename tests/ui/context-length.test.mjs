@@ -118,7 +118,7 @@ test('上下文长度通过真实界面、宿主与持久化保持一致', { tim
     await dialog.getByLabel('API 地址').fill(fixture.baseUrl);
     await dialog.getByLabel('模型名称').fill('mesnier-context-fixture');
     await dialog.getByLabel('API 密钥').fill(fixture.apiKey);
-    const input = dialog.getByLabel('上下文长度');
+    const input = dialog.getByRole('spinbutton', { name: /^上下文长度/ });
     const save = dialog.getByRole('button', { name: '保存配置', exact: true });
     const verify = dialog.getByRole('button', { name: '保存并验证', exact: true });
 
@@ -175,7 +175,7 @@ test('上下文长度通过真实界面、宿主与持久化保持一致', { tim
     await screenshot('context-length-valid');
     await dialog.getByRole('button', { name: '关闭', exact: true }).click();
     await page.getByRole('button', { name: '设置与模型' }).click();
-    assert.equal(await page.getByLabel('上下文长度').inputValue(), '100000');
+    assert.equal(await page.getByRole('spinbutton', { name: /^上下文长度/ }).inputValue(), '100000');
     assert.equal((await disk()).models[0].maxContextSize, 100000);
     report.checks.push({ action: '重新打开设置保持精确上下文值', persisted: 100000, passed: true });
     assert.deepEqual(report.pageErrors, []);

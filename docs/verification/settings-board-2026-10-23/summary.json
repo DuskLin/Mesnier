@@ -1,0 +1,376 @@
+{
+  "baseCommit": "ef2a2aa0eb805a79f3e6cad52b505611e66e241f",
+  "workingTree": true,
+  "reports": {
+    "settingsBoard": {
+      "passed": true,
+      "checks": [
+        "分类切换保留草稿；关闭及切换模型确认放弃；嵌套Escape与Tab只作用于顶层",
+        "保存中禁用导航和关闭，受控503连接失败如实显示，不启动执行",
+        "1000×700图标导航，固定标题与保存按钮可访问；返回保留工作台草稿",
+        "四列280px通高，空列同高，各列独立滚动；故意恢复短列时几何断言失败",
+        "Agent/状态/搜索过滤、摘要/项目/时间显示及排序有效，任务和执行不被改变",
+        "1000×700横向滚动、详情和关联对话正常，深浅主题与长列表截图已保存"
+      ],
+      "pageErrors": [],
+      "sourceHashes": {
+        "apps/desktop/src/renderer/components/Settings.tsx": "8f537231e090823f71255aa79e15c80eb06d01bc88a3a468facb2acb165fe66c",
+        "apps/desktop/src/renderer/components/Board.tsx": "76b2d88989c53df50c354341b8111e2ea821ce63289b58ef16bfc8601a2d4640",
+        "apps/desktop/src/renderer/components/ui.tsx": "9c6b8a48fcf48156d7ad48ebbe3ffad0efb6db63381951ff498f6ae413bb9021",
+        "apps/desktop/src/renderer/styles.css": "54bb5b008b40691d6acfde624d794c0f7b2a97cdb7ffd89558ab332df5fc5bff",
+        "tests/ui/settings-board.test.mjs": "19e745931a815da2e7fe9c5e006e6be4f2e96de5d57d3279ec4be45b0da23958"
+      },
+      "buildHashes": {
+        "index-CZcvNYW-.css": "045c711c7db58d28ea3e99aeddf9549726e923cf3b6337bc64541c6e58c32126",
+        "index-Mk6V3Ehz.js": "7ca473e7aba8b94f631df5f80e1b3b7d2bd705b6777c72f4d242dfc84a84f017",
+        "mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184"
+      },
+      "application": {
+        "packaged": true,
+        "version": "0.1.4",
+        "executable": "/Applications/Mesnier.app/Contents/MacOS/Mesnier"
+      },
+      "asarHash": "cac5b62cfb217df07bad9285fd4ab1e444ca25f6ad067c652028b54cd50c4914"
+    },
+    "contextLength": {
+      "passed": true,
+      "checks": [
+        {
+          "provider": "openai",
+          "value": 200000,
+          "action": "保存并验证",
+          "persisted": 200000,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 200000,
+          "action": "保存配置",
+          "persisted": 200000,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 1024,
+          "action": "保存并验证",
+          "persisted": 1024,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 1024,
+          "action": "保存配置",
+          "persisted": 1024,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 10000000,
+          "action": "保存并验证",
+          "persisted": 10000000,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 10000000,
+          "action": "保存配置",
+          "persisted": 10000000,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 100000,
+          "action": "保存并验证",
+          "persisted": 100000,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 100000,
+          "action": "保存配置",
+          "persisted": 100000,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 100000.5,
+          "action": "两个保存按钮及回车",
+          "rejected": true,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 1023,
+          "action": "两个保存按钮及回车",
+          "rejected": true,
+          "passed": true
+        },
+        {
+          "provider": "openai",
+          "value": 10000001,
+          "action": "两个保存按钮及回车",
+          "rejected": true,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 200000,
+          "action": "保存并验证",
+          "persisted": 200000,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 200000,
+          "action": "保存配置",
+          "persisted": 200000,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 1024,
+          "action": "保存并验证",
+          "persisted": 1024,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 1024,
+          "action": "保存配置",
+          "persisted": 1024,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 10000000,
+          "action": "保存并验证",
+          "persisted": 10000000,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 10000000,
+          "action": "保存配置",
+          "persisted": 10000000,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 100000,
+          "action": "保存并验证",
+          "persisted": 100000,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 100000,
+          "action": "保存配置",
+          "persisted": 100000,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 100000.5,
+          "action": "两个保存按钮及回车",
+          "rejected": true,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 1023,
+          "action": "两个保存按钮及回车",
+          "rejected": true,
+          "passed": true
+        },
+        {
+          "provider": "openai_responses",
+          "value": 10000001,
+          "action": "两个保存按钮及回车",
+          "rejected": true,
+          "passed": true
+        },
+        {
+          "action": "重新打开设置保持精确上下文值",
+          "persisted": 100000,
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "buildHashes": {
+        "Contents/Resources/app.asar": "cac5b62cfb217df07bad9285fd4ab1e444ca25f6ad067c652028b54cd50c4914",
+        "Contents/MacOS/Mesnier": "8eae2ea38bba17a45a86a847d15c12b876bed21029048b152162075e4c524f3c"
+      },
+      "application": {
+        "isPackaged": true,
+        "executable": "/Applications/Mesnier.app/Contents/MacOS/Mesnier",
+        "resources": "/Applications/Mesnier.app/Contents/Resources",
+        "version": "0.1.4"
+      },
+      "testSourceSha256": "ba997ca5155f8a97fed3903e7c571f65b6e36482e6567f6ff665433f5e81fb39"
+    },
+    "sidebar": {
+      "passed": true,
+      "checks": [
+        "264px侧栏、32px嵌套会话行、14/12px文字与中性选中层级",
+        "跨项目前后导航保留草稿，新选择截断前进分支",
+        "搜索越过默认条数限制，项目/最近更新视图及项目展开可用",
+        "收起恢复、焦点、偏好持久化、选中项可见且导航不创建执行",
+        "最小窗口深色侧栏无溢出，底部设置保持可见"
+      ],
+      "pageErrors": [],
+      "sourceHashes": {
+        "apps/desktop/src/renderer/App.tsx": "e893252ca5b52c10f4f527aec087ee93eb0d1766bea72b82b7b13848e12b73df",
+        "apps/desktop/src/renderer/components/Sidebar.tsx": "2962d5273827b1f09c3afdad827776bf9fe037cd2c8ef160fc3c949190b151aa",
+        "apps/desktop/src/renderer/navigation.ts": "8b76898ee8dafec41c4abf5fd6787ce1ba985f373c822e0ac4b17a8931974afd",
+        "apps/desktop/src/renderer/styles.css": "54bb5b008b40691d6acfde624d794c0f7b2a97cdb7ffd89558ab332df5fc5bff",
+        "tests/ui/sidebar.test.mjs": "a000fac3117d133e19e398247e63d66ccf9b401345f64293b073f8310c14d87b"
+      },
+      "buildHashes": {
+        "index-CZcvNYW-.css": "045c711c7db58d28ea3e99aeddf9549726e923cf3b6337bc64541c6e58c32126",
+        "index-Mk6V3Ehz.js": "7ca473e7aba8b94f631df5f80e1b3b7d2bd705b6777c72f4d242dfc84a84f017",
+        "mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184"
+      },
+      "application": {
+        "packaged": true,
+        "version": "0.1.4",
+        "executable": "/Applications/Mesnier.app/Contents/MacOS/Mesnier"
+      },
+      "asarHash": "cac5b62cfb217df07bad9285fd4ab1e444ca25f6ad067c652028b54cd50c4914"
+    },
+    "workflows": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "首次启动无演示记录，深浅主题可切换",
+          "startedAt": "2026-10-23T06:09:30.346Z",
+          "passed": true
+        },
+        {
+          "name": "模型设置可创建与编辑，不向快照泄露密钥",
+          "startedAt": "2026-10-23T06:09:30.640Z",
+          "passed": true
+        },
+        {
+          "name": "真实普通目录可创建项目，会话草稿保留且新建任务不自动执行",
+          "startedAt": "2026-10-23T06:09:31.006Z",
+          "passed": true
+        },
+        {
+          "name": "看板筛选、任务编辑和会话重命名保留关联身份",
+          "startedAt": "2026-10-23T06:09:31.373Z",
+          "passed": true
+        },
+        {
+          "name": "新增默认模型立即用于后续选择，删除后回到保留的模型",
+          "startedAt": "2026-10-23T06:09:31.623Z",
+          "passed": true
+        },
+        {
+          "name": "可发送状态下中文组合输入不发送，会话切换保留各自草稿",
+          "startedAt": "2026-10-23T06:09:31.906Z",
+          "passed": true
+        },
+        {
+          "name": "最小窗口不溢出应用，主题和历史在真实重启后恢复",
+          "startedAt": "2026-10-23T06:09:32.208Z",
+          "passed": true
+        },
+        {
+          "name": "Chat → Board → Chat 保持同一审批与执行，允许后真实文件写入且进入待验收",
+          "startedAt": "2026-10-23T06:09:34.071Z",
+          "passed": true
+        },
+        {
+          "name": "真实产物可预览与复制，丢失文件明确报错，明确验收才成为已完成",
+          "startedAt": "2026-10-23T06:09:34.776Z",
+          "passed": true
+        },
+        {
+          "name": "拒绝真实 Write 授权不写文件，界面保留拒绝事实",
+          "startedAt": "2026-10-23T06:09:35.221Z",
+          "passed": true
+        },
+        {
+          "name": "执行中修改默认模型保留启动快照，取消确认且保留已经写入的文件",
+          "startedAt": "2026-10-23T06:09:35.657Z",
+          "passed": true
+        },
+        {
+          "name": "显式重试生成新身份，使用新模型且不覆盖原取消记录",
+          "startedAt": "2026-10-23T06:09:36.547Z",
+          "passed": true
+        },
+        {
+          "name": "模型失败传播到真实界面，服务回显的凭据被脱敏",
+          "startedAt": "2026-10-23T06:09:37.714Z",
+          "passed": true
+        },
+        {
+          "name": "正常关闭保留已确认取消，重启不重放，显式新输入恢复同一会话",
+          "startedAt": "2026-10-23T06:09:38.065Z",
+          "passed": true
+        },
+        {
+          "name": "实际强杀应用后未确认执行标为中断，无孤立运行时和自动重放",
+          "startedAt": "2026-10-23T06:09:39.932Z",
+          "passed": true
+        },
+        {
+          "name": "Git Coding 项目从看板启动，拒绝不改文件，批准后留下真实代码差异",
+          "startedAt": "2026-10-23T06:09:41.655Z",
+          "passed": true
+        },
+        {
+          "name": "缺失用量显示未提供，真实零和含缓存的正数保留实际值",
+          "startedAt": "2026-10-23T06:09:43.295Z",
+          "passed": true
+        }
+      ],
+      "pageErrors": [],
+      "buildHashes": {
+        "dist/main/index.cjs": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c",
+        "dist/preload/index.cjs": "1fd034e4256e8b3438c5b077325e5f449b3af06873f39530a2ac71eb233db2a8",
+        "dist/renderer/index.html": "ca8b894ef97a90c63a52c9c9c756cfb0fbd6c138d24ed9e5a41c5408aa47a5c5",
+        "dist/renderer/assets/index-BPM_YTwn.js": "7ca473e7aba8b94f631df5f80e1b3b7d2bd705b6777c72f4d242dfc84a84f017",
+        "dist/renderer/assets/index-YhedlNDT.css": "e2e40a56b9b4d9777e961c5b6e95e8e9540d1d7bc3ea2c339bfbe1d38fb495a5",
+        "dist/renderer/assets/mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184",
+        "build/runtime/worker.mjs": "c6bea9a81361647a345cae3dfeccc4125dc138f5e6ede69e49efa7ece65cc189",
+        "build/runtime/bin/node": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32"
+      },
+      "testSourceSha256": "c97c8448cffd7fec8ad45993b2d312ab591e46c08a121ba89372854254bfca6d",
+      "runtimeTree": {
+        "sha256": "a77851f73b1e339f0aba97a9c88c4fa90160ac60dad9ae1efe6f094c7a29c37d",
+        "files": 23639
+      }
+    }
+  },
+  "installation": {
+    "version": "0.1.4",
+    "previousVersion": "0.1.3",
+    "asarHash": "cac5b62cfb217df07bad9285fd4ab1e444ca25f6ad067c652028b54cd50c4914",
+    "artifacts": {
+      "Mesnier-0.1.4-arm64.dmg": "e9a43b265ecbbd5f0486354a06438617b8a8cb16a6c332bc358015242b36215b",
+      "Mesnier-0.1.4-arm64-mac.zip": "1668a115859d4cc1f0fa44a23ea3f3b55a94a4b9385ea74786b71f70fd953f85"
+    },
+    "sourceHashes": {
+      "package.json": "d68c46bc167f6fb5b440c6a884cf7ed5dc340b4fa81c457fd0320e2155055a78",
+      "package-lock.json": "6be97c63a3147b3308d5bfdf3f45fb68a8b82cbe6310a12ede770966f27f1910",
+      "apps/desktop/src/renderer/App.tsx": "e893252ca5b52c10f4f527aec087ee93eb0d1766bea72b82b7b13848e12b73df",
+      "apps/desktop/src/renderer/main.tsx": "4a27d87500f0f61a29f0d1396111fa6fe646005787005188a8476efe4ac5a862",
+      "apps/desktop/src/renderer/components/Settings.tsx": "8f537231e090823f71255aa79e15c80eb06d01bc88a3a468facb2acb165fe66c",
+      "apps/desktop/src/renderer/components/Board.tsx": "76b2d88989c53df50c354341b8111e2ea821ce63289b58ef16bfc8601a2d4640",
+      "apps/desktop/src/renderer/components/Dialogs.tsx": "4fe0c23879de51dc3095b33e1d66a700ab4f397beb5806e1d8e577ab682a33a7",
+      "apps/desktop/src/renderer/components/Sidebar.tsx": "2962d5273827b1f09c3afdad827776bf9fe037cd2c8ef160fc3c949190b151aa",
+      "apps/desktop/src/renderer/components/Chat.tsx": "e08c6bfba9b9f705f9b33fc6e99a156f8148f743af3c0248f3590f4d44c5a125",
+      "apps/desktop/src/renderer/components/ui.tsx": "9c6b8a48fcf48156d7ad48ebbe3ffad0efb6db63381951ff498f6ae413bb9021",
+      "apps/desktop/src/renderer/styles.css": "54bb5b008b40691d6acfde624d794c0f7b2a97cdb7ffd89558ab332df5fc5bff"
+    },
+    "signatureVerified": true,
+    "userDataUnchanged": true,
+    "nativeLaunchVerified": true,
+    "nativeViewVerified": [
+      "board",
+      "settings"
+    ]
+  }
+}

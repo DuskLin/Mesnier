@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode, type RefObject } from 'react';
 import { LoaderCircle, X } from 'lucide-react';
 
 export function Button({ children, variant = 'secondary', busy = false, className = '', disabled, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' | 'danger'; busy?: boolean }) {
@@ -9,16 +9,16 @@ export function IconButton({ label, children, className = '', ...props }: Button
   return <button type="button" title={label} aria-label={label} className={`icon-button ${className}`} {...props}>{children}</button>;
 }
 
-export function Modal({ title, description, children, onClose, wide = false }: { title: string; description?: string; children: ReactNode; onClose: () => void; wide?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
+export function useDialogFocus(ref: RefObject<HTMLElement | null>, onClose: () => void) {
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const root = ref.current;
-    const focusable = () => Array.from(root?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex="0"]') ?? []);
+    const focusable = () => Array.from(root?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex="0"]') ?? []).filter((element) => element.getClientRects().length > 0);
     (root?.querySelector<HTMLElement>('[autofocus]') ?? focusable()[0] ?? root)?.focus();
     const keydown = (event: KeyboardEvent) => {
+      if (Array.from(document.querySelectorAll('[role="dialog"], [role="alertdialog"]')).at(-1) !== root) return;
       if (event.key === 'Escape') { event.preventDefault(); closeRef.current(); }
       if (event.key === 'Tab') {
         const elements = focusable();
@@ -29,8 +29,13 @@ export function Modal({ title, description, children, onClose, wide = false }: {
       }
     };
     document.addEventListener('keydown', keydown);
-    return () => { document.removeEventListener('keydown', keydown); previous?.focus(); };
+    return () => { document.removeEventListener('keydown', keydown); if (previous?.isConnected) previous.focus(); };
   }, []);
+}
+
+export function Modal({ title, description, children, onClose, wide = false }: { title: string; description?: string; children: ReactNode; onClose: () => void; wide?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useDialogFocus(ref, onClose);
   return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <div ref={ref} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} className={`modal ${wide ? 'wide' : ''}`}>
       <div className="modal-heading"><div><h2>{title}</h2>{description && <p>{description}</p>}</div><IconButton label="关闭" onClick={onClose}><X size={19} /></IconButton></div>

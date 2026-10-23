@@ -1,6 +1,6 @@
-import { Bot, CheckCheck, ClipboardList, FileText, FolderOpen, MessageSquare, Pencil, Play, Plus, Search, ShieldCheck, X } from 'lucide-react';
+import { Bot, Columns3, Filter, SlidersHorizontal, CheckCheck, ClipboardList, FileText, FolderOpen, MessageSquare, Pencil, Play, Plus, Search, ShieldCheck, X } from 'lucide-react';
 import type { Approval, Artifact, ModelConfig, Run, Snapshot, Task, TaskStatus } from '@mesnier/shared';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isActive, latestRun, taskLabels } from '../model';
 import { ApprovalCard, StatusBadge } from './Chat';
 import { Button, EmptyState, IconButton, shortDate } from './ui';
@@ -16,42 +16,84 @@ export function Board({ snapshot, projectId, selectedTaskId, onSelect, onCreate 
   const [search, setSearch] = useState('');
   const [agentId, setAgentId] = useState('');
   const [status, setStatus] = useState('');
+  const [menu, setMenu] = useState<'filter' | 'display'>();
+  const [display, setDisplay] = useState({ description: false, project: true, time: true });
+  const [order, setOrder] = useState('newest');
+  const toolbar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const outside = (event: MouseEvent) => { if (!toolbar.current?.contains(event.target as Node)) setMenu(undefined); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setMenu(undefined); toolbar.current?.querySelector<HTMLButtonElement>('[aria-expanded="true"]')?.focus(); } };
+    document.addEventListener('mousedown', outside); document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('mousedown', outside); document.removeEventListener('keydown', escape); };
+  }, [menu]);
   const all = snapshot.tasks.filter((task) => task.projectId === projectId);
   const tasks = all.filter((task) => (!agentId || task.agentId === agentId) && (!status || task.status === status) && `${task.title} ${task.description}`.toLowerCase().includes(search.toLowerCase()));
+  const project = snapshot.projects.find((item) => item.id === projectId);
+  const activeAgents = new Set(snapshot.runs.filter((run) => ['running', 'waiting_approval', 'cancelling'].includes(run.status) && all.some((task) => task.sessionId === run.sessionId)).map((run) => run.agent.id)).size;
+  const relativeTime = (value: string) => { const minutes = Math.max(0, Math.floor((Date.now() - Date.parse(value)) / 60000)); return minutes < 1 ? '刚刚' : minutes < 60 ? `${minutes}分钟前` : minutes < 1440 ? `${Math.floor(minutes / 60)}小时前` : `${Math.floor(minutes / 1440)}天前`; };
   return <>
-    <div className="view-heading"><div><h1>把目标，一步步完成。</h1><p>对话中的想法，在这里变成可以验收的成果。</p></div><div className="actions"><Button variant="primary" onClick={onCreate}><Plus size={15} />新建任务</Button></div></div>
-    <div className="board-toolbar"><div className="search-field"><Search size={14} /><input aria-label="搜索任务" placeholder="搜索任务…" value={search} onChange={(event) => setSearch(event.target.value)} /></div><select aria-label="按 Agent 筛选" value={agentId} onChange={(event) => setAgentId(event.target.value)}><option value="">全部 Agent</option>{snapshot.agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select><select aria-label="按任务状态筛选" value={status} onChange={(event) => setStatus(event.target.value)}><option value="">全部状态</option>{columns.map((column) => <option key={column.id} value={column.id}>{taskLabels[column.id]}</option>)}</select><span className="board-count">{tasks.length} 项工作</span></div>
+    <div className="board-heading"><h1>任务</h1><span className="board-total">{all.length}</span><Button className="small" variant="primary" onClick={onCreate}><Plus size={14} />新建任务</Button></div>
+    <div className="board-toolbar" ref={toolbar}>
+      <Button className="small board-all" variant="ghost" onClick={() => { setSearch(''); setAgentId(''); setStatus(''); }}><ClipboardList size={14} />全部任务</Button>
+      <div className="search-field"><Search size={14} /><input aria-label="搜索任务" placeholder="搜索任务…" value={search} onChange={(event) => setSearch(event.target.value)} /></div>
+      <span className="board-count"><span className={`status-dot ${activeAgents ? 'running' : ''}`} />{activeAgents} 个 Agent 活跃</span>
+      <div className="board-menu-anchor"><Button className="small" variant="ghost" aria-expanded={menu === 'filter'} aria-controls="board-filter" onClick={() => setMenu(menu === 'filter' ? undefined : 'filter')}><Filter size={14} />筛选{(agentId || status) && <span className="filter-indicator" />}</Button>
+        {menu === 'filter' && <div className="board-popover" id="board-filter" role="group" aria-label="任务筛选"><label>Agent<select aria-label="按 Agent 筛选" value={agentId} onChange={(event) => setAgentId(event.target.value)}><option value="">全部 Agent</option>{snapshot.agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select></label><label>状态<select aria-label="按任务状态筛选" value={status} onChange={(event) => setStatus(event.target.value)}><option value="">全部状态</option>{columns.map((column) => <option key={column.id} value={column.id}>{taskLabels[column.id]}</option>)}</select></label></div>}
+      </div>
+      <div className="board-menu-anchor"><Button className="small" variant="ghost" aria-expanded={menu === 'display'} aria-controls="board-display" onClick={() => setMenu(menu === 'display' ? undefined : 'display')}><SlidersHorizontal size={14} />显示</Button>
+        {menu === 'display' && <div className="board-popover" id="board-display" role="group" aria-label="卡片显示"><strong>卡片信息</strong>{([{ key: 'description', label: '任务摘要' }, { key: 'project', label: '项目标签' }, { key: 'time', label: '更新时间' }] as const).map(({ key, label }) => <label className="board-check" key={key}><input type="checkbox" checked={display[key]} onChange={(event) => setDisplay((previous) => ({ ...previous, [key]: event.target.checked }))} />{label}</label>)}<label>排序<select aria-label="任务排序" value={order} onChange={(event) => setOrder(event.target.value)}><option value="newest">最近更新优先</option><option value="oldest">最早更新优先</option></select></label></div>}
+      </div><span className="board-view-label"><Columns3 size={14} />看板</span>
+    </div>
     <div className="board" aria-label="任务看板">
-      {columns.filter((column) => !status || column.id === status).map((column) => <section key={column.id} className="board-column" aria-label={taskLabels[column.id]}>
+      {columns.filter((column) => !status || column.id === status).map((column) => <section key={column.id} className={`board-column ${column.className}`} aria-label={taskLabels[column.id]}>
         <div className="column-heading"><span className={`column-dot ${column.className}`} />{taskLabels[column.id]}<span className="count">{tasks.filter((task) => task.status === column.id).length}</span>{column.id === 'todo' && <IconButton label="新建待办任务" onClick={onCreate}><Plus size={14} /></IconButton>}</div>
-        {tasks.filter((task) => task.status === column.id).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map((task) => {
+        <div className="column-tasks">
+        {tasks.filter((task) => task.status === column.id).sort((a, b) => order === 'newest' ? b.updatedAt.localeCompare(a.updatedAt) : a.updatedAt.localeCompare(b.updatedAt)).map((task) => {
           const run = latestRun(snapshot.runs, task.sessionId);
           const agent = snapshot.agents.find((item) => item.id === task.agentId);
           const approvals = snapshot.approvals.filter((item) => item.runId === run?.id).length;
           return <button type="button" draggable={false} key={task.id} onClick={() => onSelect(task)} className={`task-card ${selectedTaskId === task.id ? 'selected' : ''}`} data-task-id={task.id}>
             <div className="task-card-top"><span className="mono">MN-{task.id.slice(-5).toUpperCase()}</span><ClipboardList size={12} /></div>
-            <h3>{task.title}</h3>{task.description && <p>{task.description}</p>}
-            {run && <StatusBadge run={run} />}{approvals > 0 && <span className="status-badge waiting_approval"><ShieldCheck size={11} />{approvals} 项授权</span>}
-            <div className="task-card-footer"><span className="agent-avatar"><Bot size={12} /></span><span>{agent?.name ?? '默认 Agent'}</span><time>{shortDate(task.updatedAt).split(' ')[0]}</time></div>
+            <h3>{task.title}</h3>{display.description && task.description && <p>{task.description}</p>}
+            {run && run.status !== 'succeeded' && <StatusBadge run={run} />}{approvals > 0 && <span className="status-badge waiting_approval"><ShieldCheck size={11} />{approvals} 项授权</span>}
+            {display.project && <span className="task-project"><FolderOpen size={11} />{project?.name}</span>}
+            <div className="task-card-footer"><span className="agent-avatar"><Bot size={12} /></span><span className="task-agent-name">{agent?.name ?? '默认 Agent'}</span>{display.time && <time dateTime={task.updatedAt} title={shortDate(task.updatedAt)}>{relativeTime(task.updatedAt)}</time>}</div>
           </button>;
         })}
         {!tasks.some((task) => task.status === column.id) && <div className="column-empty">{search || agentId ? '没有匹配的任务' : column.empty}</div>}
+        </div>
       </section>)}
     </div>
   </>;
 }
 
-export function Inspector({ snapshot, sessionId, task, model, onClose, onOpenChat, onEditTask, onStart, onAccept, onStop, onRespond, onArtifact, busy }: {
-  snapshot: Snapshot; sessionId?: string; task?: Task; model?: ModelConfig; onClose: () => void; onOpenChat: (sessionId: string) => void;
+export function Inspector({ overlay = false, snapshot, sessionId, task, model, onClose, onOpenChat, onEditTask, onStart, onAccept, onStop, onRespond, onArtifact, busy }: {
+  overlay?: boolean; snapshot: Snapshot; sessionId?: string; task?: Task; model?: ModelConfig; onClose: () => void; onOpenChat: (sessionId: string) => void;
   onEditTask: (task: Task) => void; onStart: (task: Task) => void; onAccept: (task: Task) => void; onStop: (run: Run) => void;
   onRespond: (approval: Approval, decision: 'approved' | 'rejected') => void; onArtifact: (artifact: Artifact) => void; busy: (key: string) => boolean;
 }) {
+  const panel = useRef<HTMLElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    if (!overlay) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (!document.querySelector('[role="dialog"]')) panel.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !document.querySelector('[role="dialog"]')) {
+        event.preventDefault(); close.current();
+      }
+    };
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('keydown', escape); if (previous?.isConnected) previous.focus(); };
+  }, [overlay]);
   const runs = snapshot.runs.filter((run) => run.sessionId === sessionId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const artifacts = snapshot.artifacts.filter((artifact) => artifact.sessionId === sessionId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const active = runs.find(isActive);
   const current = runs[0];
   const approvals = snapshot.approvals.filter((approval) => runs.some((run) => run.id === approval.runId));
-  return <aside className="inspector" aria-label={task ? '任务详情' : '产物与执行记录'}>
+  return <aside ref={panel} className="inspector" aria-label={task ? '任务详情' : '产物与执行记录'}>
     <div className="inspector-heading"><h2>{task ? <ClipboardList size={15} /> : <FolderOpen size={15} />}{task ? '任务详情' : '产物与记录'}</h2><IconButton label="关闭详情面板" onClick={onClose}><X size={17} /></IconButton></div>
     <div className="inspector-content">
       {task && <><h3>{task.title}</h3><span className={`status-badge ${task.status}`}>{taskLabels[task.status]}</span><dl className="detail-grid"><dt>指派 Agent</dt><dd>{snapshot.agents.find((agent) => agent.id === task.agentId)?.name ?? task.agentId}</dd><dt>后续模型</dt><dd>{model?.name ?? '尚未配置'}</dd><dt>创建时间</dt><dd>{shortDate(task.createdAt)}</dd>{task.acceptedAt && <><dt>验收时间</dt><dd>{shortDate(task.acceptedAt)}</dd></>}</dl>{task.description && <><h4>任务目标</h4><p className="inspector-description">{task.description}</p></>}{task.acceptanceCriteria && <><h4>验收标准</h4><p className="inspector-description">{task.acceptanceCriteria}</p></>}{task.acceptanceNote && <><h4>验收说明</h4><p className="inspector-description">{task.acceptanceNote}</p></>}

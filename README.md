@@ -173,6 +173,7 @@ Mesnier/
 ```bash
 npm ci
 npm run typecheck
+npm run check:design
 npm test
 npm run test:probe
 npm run test:mutations
@@ -222,6 +223,10 @@ openspec validate --all --strict --no-interactive
 `adopt-kimi-agent-foundation` 已归档到 `openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/`，两份已实现能力规格位于 `openspec/specs/`。严格验证检查规格结构与一致性；应用功能结果另见发行证据。升级 CLI 后运行 `openspec update`，并检查生成文件的差异。
 
 ## 参与贡献与 PR 检查
+
+界面开发先阅读 [设计规范](DESIGN.md)：布局、字号与响应式参考 ZCode 源码，配色使用 Mesnier Logo 的蓝青主题。后续 UI 变更统一遵循该规范，并按实际窗口与主题验证。
+
+本轮源码样式调整与真实 Electron 验证见 [设计规范验收](docs/verification/ui-design-2026-10-23.md)。0.1.2的本机更新见 [安装记录](docs/verification/release-0.1.2.md)；随后按实际ZCode截图重做侧栏并安装0.1.3，见 [侧栏对齐验收](docs/verification/sidebar-2026-10-23.md)。最新0.1.4已重做设置分类页与Multica式通高看板并替换本机应用，见 [设置与看板验收](docs/verification/settings-board-2026-10-23.md)。
 
 提交前请阅读 [贡献指南](CONTRIBUTING.md)，按变更影响选择检查，并使用 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md) 记录问题、修改内容、验证证据、风险与未覆盖项。Agent 同时遵循 [协作约定](AGENTS.md)。
 
