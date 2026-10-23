@@ -1,0 +1,98 @@
+{
+  "kind": "installed-app-real-local-model",
+  "startedAt": "2026-10-22T19:32:25.151Z",
+  "appPath": "/Applications/Mesnier.app",
+  "executablePath": "/Applications/Mesnier.app/Contents/MacOS/Mesnier",
+  "model": {
+    "baseUrl": "http://127.0.0.1:65050/v1",
+    "model": "mesnier-local-qwen3-4b",
+    "kind": "real-model"
+  },
+  "environment": {
+    "platform": "darwin",
+    "release": "24.6.0",
+    "architecture": "arm64",
+    "driverNode": "v22.22.0",
+    "appPathEnvironment": "/usr/bin:/bin:/usr/sbin:/sbin"
+  },
+  "testSourceSha256": "31477f2ba99b8c6674c4fb7924ad9a10f8964c725f2c326db0ee494771e88102",
+  "installedResources": {
+    "sha256": "c82df18f7c53f8edc043f35e1d95108a50dfb06162dbc881ef11eca25dcc1fb6",
+    "files": 23645,
+    "appAsarSha256": "2717594effe5d5f98be5e23e66c21d183f75d33f16576293b937b899dfb02711"
+  },
+  "codesign": {
+    "exitCode": 0
+  },
+  "directoryCheck": {
+    "exitCode": 128,
+    "stdout": ""
+  },
+  "cliSearch": {
+    "kimi": [],
+    "kimi-code": [],
+    "codex": [],
+    "claude": [],
+    "opencode": []
+  },
+  "checks": [
+    {
+      "name": "从安装路径启动真实打包应用，系统 PATH 内无独立 Agent CLI",
+      "passed": true
+    },
+    {
+      "name": "通过界面配置真实模型并完成工具能力连接验证",
+      "passed": true
+    },
+    {
+      "name": "真实模型读取笔记、请求写入授权并生成包含源事实的 Markdown",
+      "passed": true
+    },
+    {
+      "name": "实际产物预览一致，明确验收后任务完成",
+      "passed": true
+    },
+    {
+      "name": "重启安装应用恢复同一会话、任务和执行，不重写产物",
+      "passed": true
+    }
+  ],
+  "approvals": [
+    {
+      "requestId": "e4ad27d3-727e-4456-8902-39c572fc62b4",
+      "tool": "Write",
+      "decision": "approved",
+      "targetMatchesExpected": true
+    }
+  ],
+  "pageErrors": [],
+  "passed": true,
+  "application": {
+    "isPackaged": true,
+    "version": "0.1.0",
+    "executable": "/Applications/Mesnier.app/Contents/MacOS/Mesnier",
+    "resources": "/Applications/Mesnier.app/Contents/Resources",
+    "path": "/usr/bin:/bin:/usr/sbin:/sbin",
+    "electron": "41.0.3"
+  },
+  "result": {
+    "runId": "a4eec563-1aba-45f9-9def-1f2e74e73ad7",
+    "sessionId": "583dfb33-112a-431d-8290-1c2f1e388e24",
+    "taskId": "3858f56d-d367-483a-b4ef-ca6ad8dbacd5",
+    "tools": [
+      "Read",
+      "Write"
+    ],
+    "artifact": "reading-plan.md",
+    "sha256": "7ef15e8b5ce9b302ec419b3c0dbfb9404eda65345f5dda909bcae911947235e0"
+  },
+  "installedResourcesUnchanged": true,
+  "finishedAt": "2026-10-22T19:34:29.334Z",
+  "evidenceNote": "摘要去除了本机工作区、隔离配置和临时目录路径；完整逐文件资源清单与原报告由执行者保留。",
+  "launchMethod": "Playwright Electron 启动真实已安装应用；LaunchServices 从系统打开的独立验证见主交付记录。",
+  "scopeLimitations": [
+    "未交互验证原生目录选择器或 Finder 窗口",
+    "未进行 Apple Developer ID 签名或公证验收",
+    "仅验证 macOS arm64 与本地真实 Qwen3-4B 服务，未证明所有第三方模型兼容性"
+  ]
+}

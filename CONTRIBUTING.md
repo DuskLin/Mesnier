@@ -1,6 +1,6 @@
 # 贡献指南
 
-Mesnier 当前处于产品规划阶段，已选定 Kimi Code 作为 Agent 二开底座，尚无可运行应用；桌面框架、宿主实现与持久化等工程选型仍待确定。提交前请阅读 [README.md](README.md)、[AGENTS.md](AGENTS.md)、[OpenSpec 配置](openspec/config.yaml) 和 [LESSONS.md](LESSONS.md)，避免将建设目标表述为已交付能力。
+Mesnier 已完成首个 macOS 桌面版本的本机安装与功能验收：Electron + React + TypeScript 界面与宿主、独立 Node 24 内置 Kimi harness。检查命令随工程初始化落地，功能状态以实际验证为准。提交前请阅读 [README.md](README.md)、[AGENTS.md](AGENTS.md)、[OpenSpec 配置](openspec/config.yaml) 和 [LESSONS.md](LESSONS.md)，避免将建设目标表述为已交付能力。
 
 ## 变更流程
 
@@ -63,17 +63,25 @@ Mesnier 当前处于产品规划阶段，已选定 Kimi Code 作为 Agent 二开
 | --- | --- | --- |
 | 文档与协作约定 | 检查本地链接、图片引用、标题锚点、命令与项目现状；执行 Git 差异检查 | 当前适用 |
 | 品牌素材 | 实际打开预览，检查尺寸、透明背景、引用路径和新增体积 | 涉及素材时适用 |
-| OpenSpec | 检查范围和任务状态，执行严格验证；规划与交付状态分开表述 | 当前有底座规划变更；归档后的能力规格仍为空 |
-| 应用代码 | 按仓库实际配置执行格式、lint、类型检查、测试与构建；不适用项说明原因 | 尚无应用代码和命令，待工程初始化后补充 |
-| 界面与交互 | 覆盖正常、加载、空、失败状态及受影响的 Chat / Board 入口；附截图或录屏 | 有界面实现后适用 |
-| 运行时与平台 | 按影响验证内置运行时准备、模型配置、认证、执行、权限、取消和恢复；列出系统、上游基线与派生版本及实际结果 | 有派生运行时和集成实现后适用；模拟测试不能证明真实运行兼容 |
-| 持久化或兼容性 | 验证迁移、旧数据读取、失败恢复和回退，记录数据影响 | 有对应实现后适用 |
+| OpenSpec | 检查范围和任务状态，执行严格验证；规划与交付状态分开表述 | 当前有两份已归档能力规格；后续变更状态以 openspec list 为准 |
+| 应用代码 | 按仓库实际配置执行格式、lint、类型检查、测试与构建；不适用项说明原因 | 已有 `npm run typecheck`、`npm test`、`npm run test:probe`、`npm run test:mutations`、`npm run build`、`npm run test:runtime` 和 `npm run package` |
+| 界面与交互 | 覆盖正常、加载、空、失败状态及受影响的 Chat / Board 入口；附截图或录屏 | 当前适用：真实 Electron 交互与安装包启动分别记录 |
+| 运行时与平台 | 按影响验证内置运行时准备、模型配置、认证、执行、权限、取消和恢复；列出系统、上游基线与派生版本及实际结果 | 当前适用：内置 harness、模型服务和 macOS 分别验证；受控协议不能证明真实模型兼容 |
+| 持久化或兼容性 | 验证迁移、旧数据读取、失败恢复和回退，记录数据影响 | 当前适用：schema 1 原子状态、备份、执行中断和凭据引用 |
 
 ### 当前可执行的命令
 
 在仓库根目录运行；OpenSpec CLI 的安装方式见 [README](README.md#openspec-协作流程)。
 
 ```bash
+npm run typecheck
+npm test
+npm run test:probe
+npm run test:mutations
+npm run build
+npm run test:runtime
+# 发行变更在当前已支持的 macOS arm64 上执行。
+npm run package
 git status --short
 git diff --check
 git diff --cached --check
@@ -92,7 +100,7 @@ git diff --check "$target_ref"...HEAD
 git diff "$target_ref"...HEAD
 ```
 
-当前 OpenSpec 有 `adopt-kimi-agent-foundation` 规划变更，`openspec/specs/` 仍为空。严格验证应记录实际变更检查结果，不能表述为功能验收通过；以后没有规格或变更时才记录“无可验证条目”。没有应用代码时，应用构建、自动化测试和真实运行验证应标注“不适用：尚无应用代码”。
+首个变更 `adopt-kimi-agent-foundation` 已归档，`openspec/specs/` 包含运行时与工作台两份规格。严格验证应记录实际规格或变更结果，不能表述为功能验收通过；没有规格或变更时才记录“无可验证条目”。已实现模块必须运行适用检查；尚未接入或没有实际证据的运行时、平台和模型场景保持未验证。
 
 当前仓库没有 GitHub Actions 检查工作流；PR 模板是人工检查清单，不会自动阻止合并。后续引入工程命令或 CI 时，应在同一变更中同步本指南与模板，并确认实际检查范围。CI 通过也不能替代未覆盖的平台、界面和真实运行时验证。
 

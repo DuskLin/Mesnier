@@ -1,0 +1,78 @@
+{
+  "packages/agent-core-v2/src/agent/llmRequester/llmRequesterService.ts": {
+    "upstreamSha256": "d998b7ffa13f7f525e40c732b53b70c21e8bb779e93a1f45abaa3e45f2988dc8",
+    "patchedSha256": "014df41238fb9e87fe275d7d2f29c8a691767ad4254bfcbb434c0a38099f18ad"
+  },
+  "packages/agent-core-v2/src/agent/permissionRules/permissionRulesService.ts": {
+    "upstreamSha256": "99d5c3a018c77648f23658810a1e73475312cd9b1ccdcce4110d4cb866c230ae",
+    "patchedSha256": "d584d47ceaa9944bc2a927b9872696ac009e5c5a9f78c756c1ee396047147884"
+  },
+  "packages/agent-core-v2/src/agent/profile/context.ts": {
+    "upstreamSha256": "e8014943accc5ab7c6b05a3c5d5f5d54398489491ea6680df08f2837fd3d6337",
+    "patchedSha256": "58ce04f2f6615ea06712fc23c3f41e9d8cbe2da10829506a96d71892c9649cbc"
+  },
+  "packages/agent-core-v2/src/agent/tools/os/bash/bashTool.ts": {
+    "upstreamSha256": "1c7e9936d0f5fd01f62474b6a20553f673361b454df774a1cffd7a8077ddcc11",
+    "patchedSha256": "f2ce454b77821221d21f9565998c7b4e2596be00a9748ae2e43057c2674baa4e"
+  },
+  "packages/agent-core-v2/src/app/auth/authService.ts": {
+    "upstreamSha256": "d5b564fac65ff4f55c169f0dbb5c69569d7bd15df1a1b0e379bfe9874e07e68b",
+    "patchedSha256": "6a67f1af39d3d5d67c73e93ef07d9e612ea042be3e43c2eb9d19acdc699984cc"
+  },
+  "packages/agent-core-v2/src/app/bootstrap/bootstrap.ts": {
+    "upstreamSha256": "b1f7938db6e65d7d19201657a202e6dd02898e14affe2180dd99da18b6bee173",
+    "patchedSha256": "df0095ccf44c81d06d410e47b6c7d1eab938f05228312d6f939ebd5e88db1dd5"
+  },
+  "packages/agent-core-v2/src/app/mcpConfig/configLoader.ts": {
+    "upstreamSha256": "ed30b684f8592466b6d485b5048156012bab8ae1b355cda572a1acdb03f35fc3",
+    "patchedSha256": "4f36f0885d26eddc36c5f3637b181560a2cf4bf7170a5f153c7a42ae70d69e78"
+  },
+  "packages/agent-core-v2/src/features/skill/catalog/skillRoots.ts": {
+    "upstreamSha256": "e8a7986423170e306810d8972a2e3f17db9b8d0e7e6eb4f8170c674fc3d3cbea",
+    "patchedSha256": "7b7cf510905e441cb17259645eb1baa2713b71ee22d4ddf5fa068833ad2a198b"
+  },
+  "packages/agent-core-v2/src/human/utils/watch.ts": {
+    "upstreamSha256": "42891f37e67d64ec3f2df0973337613181d844507392c71e8bbe89848d028ab2",
+    "patchedSha256": "7a5afc815508f6f3afe4405acb708b50d38f61db69456a062ab73e311c7c06bc"
+  },
+  "packages/agent-core-v2/src/llm-adapter/model/catalog-service.ts": {
+    "upstreamSha256": "ac0d5ac0d53dd938811bbe0402fd43a6cf35e010f42b439245d09910d93b84ff",
+    "patchedSha256": "a88ed616e24dfa597c562a13b751741bfa1932e4433a819442994c6f52facc2d"
+  },
+  "packages/agent-core-v2/src/os/backends/node-local/hostEnvironmentService.ts": {
+    "upstreamSha256": "a4805cc0ec31bc97bbd5f22806b030590cd603f2eeece7271883eb40188db99d",
+    "patchedSha256": "ec21bb3bf0ab262169a8b5774b7ada58142f537768c3823fa46d71da03447671"
+  },
+  "packages/agent-core-v2/src/os/backends/node-local/hostProcessService.ts": {
+    "upstreamSha256": "129e37a1012c3db5c0fbcc82dbef6900c9dc95d12fda3027a20b642a7fa97098",
+    "patchedSha256": "12ef481c49fdbc197a285392cb96c638c3dbe2152970472c98ba11b1e0e07d49"
+  },
+  "packages/agent-core-v2/src/os/backends/node-local/hostTerminalService.ts": {
+    "upstreamSha256": "917db4f7278252b25134dd2c209ddb5db999b56d05f59b7e59a85fd381e5a4b1",
+    "patchedSha256": "2884854a6a1fda925a97d830010504d2fb77383b3180bdcfc4a20f15c9d2fb90"
+  },
+  "packages/agent-core-v2/src/os/backends/node-local/tools/rgLocator.ts": {
+    "upstreamSha256": "6bb61d999b8d90b763774adab1a730af76cee23d2b1f7c8addec53ef8e386183",
+    "patchedSha256": "648b7eabef378dd1bbdcc5aa1f1874397ac6ff3010efde251da512abaebb7156"
+  },
+  "packages/agent-core-v2/src/persistence/backends/node-fs/projectLocalConfigService.ts": {
+    "upstreamSha256": "7ccbf9c3b8b91ea6e9a297d431ac497277790b939fbc1aab8f967e48f44d945c",
+    "patchedSha256": "23b10478f716c9931c94d14cf46f92c047f77913ee3e66d441fb9380df70c696"
+  },
+  "packages/agent-core-v2/src/workspace/workspaceAgentProfileLoader/internal/agentRoots.ts": {
+    "upstreamSha256": "d7856ef548266c8554593cfd2bc0065b8fa429d119030af1e5ac5fbb751a1647",
+    "patchedSha256": "44ee36a33e833beee25e1db4582a21caf13a8ab8b56ef58999a29d8487e49e12"
+  },
+  "packages/agent-core-v2/src/workspace/workspaceFs/internal/rgLocator.ts": {
+    "upstreamSha256": "4fea2990672a936bd6508cf4a8221b2cf2eed9f4924a598138574a4e465a9070",
+    "patchedSha256": "d74911a509535b19ef26d885db1d00f8ce562ee7a9772cabff349d19da23a0ab"
+  },
+  "packages/node-sdk/src/sdk-rpc-client-v2.ts": {
+    "upstreamSha256": "84c5a3dfadb6eeb83efcb087bcc39082bf79decce06f89e50a2de0a72a7bed30",
+    "patchedSha256": "31138c6272f2f82bd3ebc8ae177c89d475e91feddc7c80356bce840ad5f7f798"
+  },
+  "packages/node-sdk/src/types.ts": {
+    "upstreamSha256": "345e447a396c07d91f3b2dd3dc2432d341c6c1f5ea2575c66c97f3eaafe57bb6",
+    "patchedSha256": "0caa077533f537c52d467a38e2490d6666ca5a63a469e776ea76d31712b72717"
+  }
+}

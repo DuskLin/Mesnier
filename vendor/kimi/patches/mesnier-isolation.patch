@@ -1,0 +1,404 @@
+--- a/packages/agent-core-v2/src/agent/permissionRules/permissionRulesService.ts
++++ b/packages/agent-core-v2/src/agent/permissionRules/permissionRulesService.ts
+@@ -1,3 +1,5 @@
++import { IConfigService } from '#/app/config/config';
++import type { PermissionConfig } from './configSection';
+ import { LifecycleScope } from '#/app/scopes';
+ 
+ import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
+@@ -20,6 +22,7 @@
+   declare readonly _serviceBrand: undefined;
+ 
+   constructor(
++    @IConfigService private readonly config: IConfigService,
+     @IEventDispatcher private readonly dispatcher: IEventDispatcher,
+     @IAgentScopeContext private readonly scopeContext: IAgentScopeContext,
+     @IAgentStateService private readonly agentState: IAgentStateService,
+@@ -28,7 +31,8 @@
+   }
+ 
+   get rules(): readonly PermissionRule[] {
+-    return [...this.agentState.get(permissionRulesKey).rules];
++    // Mesnier：把已解析的用户规则接入现有 policy 链，避免配置只被保存而不执行。
++    return [...this.agentState.get(permissionRulesKey).rules, ...(this.config.get<PermissionConfig>('permission')?.rules ?? [])];
+   }
+ 
+   get sessionApprovalRulePatterns(): readonly string[] {
+--- a/packages/agent-core-v2/src/agent/profile/context.ts
++++ b/packages/agent-core-v2/src/agent/profile/context.ts
+@@ -103,7 +103,7 @@
+ export const AGENTS_MD_PLAIN_NAMES = ['AGENTS.md', 'agents.md'] as const;
+ 
+ export function dotKimiAgentsMdPath(dir: string): string {
+-  return join(dir, '.kimi-code', 'AGENTS.md');
++  return join(dir, '.mesnier', 'AGENTS.md');
+ }
+ 
+ export function agentsMdCandidatePaths(dir: string): string[] {
+@@ -181,7 +181,7 @@
+   };
+ 
+   const realHome = deps.homeDir;
+-  const brandDir = brandHome ?? join(realHome, '.kimi-code');
++  const brandDir = brandHome ?? join(realHome, '.mesnier');
+   await collect(join(brandDir, 'AGENTS.md'));
+ 
+   const genericDirs = [join(realHome, '.agents')];
+@@ -231,7 +231,7 @@
+   brandHome?: string,
+ ): Promise<readonly AgentsMdWatchRoot[]> {
+   const realHome = deps.homeDir;
+-  const brandDir = brandHome ?? join(realHome, '.kimi-code');
++  const brandDir = brandHome ?? join(realHome, '.mesnier');
+   const plan: AgentsMdWatchRoot[] = [
+     { root: brandDir, candidates: [join(brandDir, 'AGENTS.md')] },
+     {
+@@ -244,7 +244,7 @@
+   const projectCandidates: string[] = [];
+   for (const dir of dirsRootToLeaf(rootWorkDir, projectRoot)) {
+     projectCandidates.push(
+-      join(dir, '.kimi-code', 'AGENTS.md'),
++      join(dir, '.mesnier', 'AGENTS.md'),
+       join(dir, 'AGENTS.md'),
+       join(dir, 'agents.md'),
+     );
+--- a/packages/agent-core-v2/src/agent/tools/os/bash/bashTool.ts
++++ b/packages/agent-core-v2/src/agent/tools/os/bash/bashTool.ts
+@@ -161,7 +161,7 @@
+     command: string,
+   ): Promise<IHostProcess> {
+     const shellCwd = getShellPathBridge(env).toShellPath(effectiveCwd);
+-    const shellCommand = `cd ${shellQuote(shellCwd)} && ${command}`;
++    const shellCommand = `cd ${shellQuote(shellCwd)} || exit $?\n${command}`;
+     const noninteractiveEnv: Record<string, string> = {
+       NO_COLOR: '1',
+       TERM: 'dumb',
+--- a/packages/agent-core-v2/src/app/auth/authService.ts
++++ b/packages/agent-core-v2/src/app/auth/authService.ts
+@@ -659,6 +659,7 @@
+   declare readonly _serviceBrand: undefined;
+ 
+   constructor(
++    @IBootstrapService private readonly bootstrap: IBootstrapService,
+     @IProviderService private readonly providerService: IProviderService,
+     @IModelService private readonly modelService: IModelService,
+     @IConfigService private readonly config: IConfigService,
+@@ -718,7 +719,7 @@
+       });
+       if (auth.apiKey !== undefined) return;
+       if (auth.apiKeyEnv !== undefined) {
+-        if (nonEmpty(process.env[auth.apiKeyEnv]) !== undefined) return;
++        if (nonEmpty(this.bootstrap.getEnv(auth.apiKeyEnv)) !== undefined) return;
+         throw new AuthCredentialEnvMissingError(providerName, auth.apiKeyEnv);
+       }
+       if (auth.oauth !== undefined) {
+--- a/packages/agent-core-v2/src/app/bootstrap/bootstrap.ts
++++ b/packages/agent-core-v2/src/app/bootstrap/bootstrap.ts
+@@ -17,7 +17,15 @@
+ 
+ export type HostUiCapability = 'update_panel';
+ 
++/** Mesnier：只报告本运行时创建的进程身份，供宿主清理使用。 */
++export interface HostProcessObservation {
++  readonly kind: 'started' | 'exited';
++  readonly pid: number;
++  readonly pgid?: number;
++}
++
+ export interface HostArgs {
++  readonly processObserver?: (event: HostProcessObservation) => void;
+   readonly agentFiles?: readonly string[];
+   readonly skillDirs?: readonly string[];
+   readonly requestHeaders: Readonly<Record<string, string>>;
+@@ -28,6 +36,7 @@
+ }
+ 
+ export interface HostArgsInput {
++  readonly processObserver?: (event: HostProcessObservation) => void;
+   readonly agentFiles?: readonly string[];
+   readonly skillDirs?: readonly string[];
+   readonly requestHeaders?: Readonly<Record<string, string>>;
+@@ -39,6 +48,7 @@
+ 
+ export function resolveHostArgs(input: HostArgsInput | undefined): HostArgs {
+   return {
++    processObserver: input?.processObserver,
+     agentFiles: input?.agentFiles,
+     skillDirs: input?.skillDirs,
+     requestHeaders: input?.requestHeaders ?? {},
+@@ -170,7 +180,7 @@
+   env: NodeJS.ProcessEnv = process.env,
+   osHomeDir: string = homedir(),
+ ): string {
+-  return homeDir ?? env['KIMI_CODE_HOME'] ?? join(osHomeDir, '.kimi-code');
++  return homeDir ?? env['KIMI_CODE_HOME'] ?? join(osHomeDir, '.mesnier');
+ }
+ 
+ export function resolveConfigPath(input: {
+--- a/packages/agent-core-v2/src/app/mcpConfig/configLoader.ts
++++ b/packages/agent-core-v2/src/app/mcpConfig/configLoader.ts
+@@ -27,7 +27,7 @@
+   return {
+     user: join(resolveKimiHome(input.homeDir), 'mcp.json'),
+     projectRoot: join(projectRoot, '.mcp.json'),
+-    project: join(input.cwd, '.kimi-code', 'mcp.json'),
++    project: join(input.cwd, '.mesnier', 'mcp.json'),
+   };
+ }
+ 
+--- a/packages/agent-core-v2/src/features/skill/catalog/skillRoots.ts
++++ b/packages/agent-core-v2/src/features/skill/catalog/skillRoots.ts
+@@ -7,7 +7,7 @@
+ 
+ const USER_BRAND_DIRS = ['skills'] as const;
+ const USER_GENERIC_DIRS = ['.agents/skills'] as const;
+-const PROJECT_BRAND_DIRS = ['.kimi-code/skills'] as const;
++const PROJECT_BRAND_DIRS = ['.mesnier/skills'] as const;
+ const PROJECT_GENERIC_DIRS = ['.agents/skills'] as const;
+ 
+ export interface SkillRootsOptions {
+--- a/packages/agent-core-v2/src/human/utils/watch.ts
++++ b/packages/agent-core-v2/src/human/utils/watch.ts
+@@ -681,7 +681,7 @@
+ 
+ function isKimiCodeDir(path: string): boolean {
+   const name = basename(path);
+-  return process.platform === 'win32' ? name.toLowerCase() === '.kimi-code' : name === '.kimi-code';
++  return process.platform === 'win32' ? name.toLowerCase() === '.mesnier' : name === '.mesnier';
+ }
+ 
+ function isCandidateRelated(root: string, candidates: readonly string[], path: string): boolean {
+--- a/packages/agent-core-v2/src/llm-adapter/model/catalog-service.ts
++++ b/packages/agent-core-v2/src/llm-adapter/model/catalog-service.ts
+@@ -1,3 +1,4 @@
++import { IBootstrapService } from '#/app/bootstrap/bootstrap';
+ import { parseKimiCodeCustomHeaders } from '@moonshot-ai/kimi-code-oauth';
+ import {
+   apiKeyEnvMissingMessage,
+@@ -82,6 +83,7 @@
+   private readonly cache = new Map<string, CatalogEntry>();
+ 
+   constructor(
++    @IBootstrapService private readonly bootstrap: IBootstrapService,
+     @IProviderCatalogRuntime private readonly runtime: IProviderCatalogRuntime,
+     @IProviderService private readonly providers: IProviderService,
+     @IModelService private readonly models: IModelService,
+@@ -290,7 +292,7 @@
+   ): Promise<ProviderCredentialState> {
+     const declared = declaredProviderCredential(provider, providerId);
+     return {
+-      hasApiKey: hasConfiguredApiKey(provider),
++      hasApiKey: hasConfiguredApiKey(provider, (name) => this.bootstrap.getEnv(name)),
+       hasOAuthToken: await this.hasCachedToken(providerId, provider),
+       hasCredentialConflict: declared.kind === 'conflict',
+     };
+@@ -466,7 +468,7 @@
+       const envName = auth.apiKeyEnv;
+       return {
+         resolve: () => {
+-          const apiKey = nonEmpty(process.env[envName]);
++          const apiKey = nonEmpty(this.bootstrap.getEnv(envName));
+           if (apiKey === undefined) {
+             throw new Error2(
+               CONFIG_INVALID_ERROR_CODE,
+@@ -617,10 +619,10 @@
+   }
+ }
+ 
+-function hasConfiguredApiKey(provider: CatalogProviderInfo): boolean {
++function hasConfiguredApiKey(provider: CatalogProviderInfo, getEnv: (name: string) => string | undefined): boolean {
+   if (nonEmpty(provider.apiKey) !== undefined) return true;
+   const apiKeyEnv = nonEmpty(provider.apiKeyEnv);
+-  if (apiKeyEnv !== undefined) return nonEmpty(process.env[apiKeyEnv]) !== undefined;
++  if (apiKeyEnv !== undefined) return nonEmpty(getEnv(apiKeyEnv)) !== undefined;
+   if (provider.type === undefined) return false;
+   return resolveProviderEndpoint(provider.type, provider.env ?? {}).apiKey !== undefined;
+ }
+--- a/packages/agent-core-v2/src/os/backends/node-local/hostEnvironmentService.ts
++++ b/packages/agent-core-v2/src/os/backends/node-local/hostEnvironmentService.ts
+@@ -1,3 +1,5 @@
++import { homedir } from 'node:os';
++import { IBootstrapService } from '#/app/bootstrap/bootstrap';
+ import { LifecycleScope } from '#/app/scopes';
+ 
+ import { ScopeActivation, registerScopedService } from '#/_base/di/scope';
+@@ -24,12 +26,13 @@
+   private _probeError?: Error;
+   readonly ready: Promise<void>;
+ 
+-  constructor() {
++  constructor(@IBootstrapService bootstrap: IBootstrapService) {
+     this.ready = Promise.all([
+       probeHostEnvironmentFromNode().then((info) => {
+-        this._info = info;
++        this._info = { ...info, homeDir: bootstrap.osHomeDir };
+       }),
+-      applyLoginShellPathFromNode(),
++      // Mesnier：显式隔离 home 时不执行用户登录脚本。
++      bootstrap.osHomeDir === homedir() ? applyLoginShellPathFromNode() : Promise.resolve(),
+     ])
+       .then(() => {})
+       .catch((error: unknown) => {
+--- a/packages/agent-core-v2/src/os/backends/node-local/hostProcessService.ts
++++ b/packages/agent-core-v2/src/os/backends/node-local/hostProcessService.ts
+@@ -1,3 +1,4 @@
++import { IBootstrapService } from '#/app/bootstrap/bootstrap';
+ import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process';
+ import type { Readable, Writable } from 'node:stream';
+ 
+@@ -180,6 +181,7 @@
+ }
+ 
+ export class HostProcessService implements IHostProcessService {
++  constructor(@IBootstrapService private readonly bootstrap: IBootstrapService) {}
+   declare readonly _serviceBrand: undefined;
+ 
+   async spawn(
+@@ -202,6 +204,13 @@
+         },
+       );
+     }
++    if (child.pid !== undefined) {
++      const identity = { pid: child.pid, pgid: !isWindows && spawnOptions.detached ? child.pid : undefined };
++      this.bootstrap.args.processObserver?.({ kind: 'started', ...identity });
++      const exited = () => this.bootstrap.args.processObserver?.({ kind: 'exited', ...identity });
++      if (child.exitCode !== null || child.signalCode !== null) exited();
++      else child.once('exit', exited);
++    }
+     return new HostProcess(child, options.mergeStderr ?? false);
+   }
+ }
+--- a/packages/agent-core-v2/src/os/backends/node-local/hostTerminalService.ts
++++ b/packages/agent-core-v2/src/os/backends/node-local/hostTerminalService.ts
+@@ -1,3 +1,4 @@
++import { IBootstrapService } from '#/app/bootstrap/bootstrap';
+ import type { IPty } from 'node-pty';
+ 
+ import { Service } from '#/_base/di/service';
+@@ -7,6 +8,7 @@
+ import { IHostTerminalService, type TerminalProcess, type TerminalSpawnOptions } from '#/os/interface/terminal';
+ 
+ export class HostTerminalService extends Service implements IHostTerminalService {
++  constructor(@IBootstrapService private readonly bootstrap: IBootstrapService) { super(); }
+   declare readonly _serviceBrand: undefined;
+ 
+   private readonly processes = new Set<TerminalProcess>();
+@@ -20,6 +22,9 @@
+       rows: options.rows,
+       env: globalThis.process.env,
+     });
++    const identity = { pid: proc.pid, pgid: process.platform === 'win32' ? undefined : proc.pid };
++    this.bootstrap.args.processObserver?.({ kind: 'started', ...identity });
++    proc.onExit(() => this.bootstrap.args.processObserver?.({ kind: 'exited', ...identity }));
+     const terminalProcess: TerminalProcess = {
+       onProcessData: (listener) => proc.onData(listener),
+       onProcessExit: (listener) => proc.onExit((event) => listener({ exitCode: event.exitCode })),
+--- a/packages/agent-core-v2/src/os/backends/node-local/tools/rgLocator.ts
++++ b/packages/agent-core-v2/src/os/backends/node-local/tools/rgLocator.ts
+@@ -58,7 +58,7 @@
+ function getShareDir(): string {
+   const override = process.env['KIMI_CODE_HOME'];
+   if (override !== undefined && override !== '') return override;
+-  return join(homedir(), '.kimi-code');
++  return join(homedir(), '.mesnier');
+ }
+ 
+ export function getShareBinRgPath(): string {
+--- a/packages/agent-core-v2/src/persistence/backends/node-fs/projectLocalConfigService.ts
++++ b/packages/agent-core-v2/src/persistence/backends/node-fs/projectLocalConfigService.ts
+@@ -86,7 +86,7 @@
+   }
+ 
+   private getProjectLocalConfigPath(projectRoot: string): string {
+-    return join(projectRoot, '.kimi-code', 'local.toml');
++    return join(projectRoot, '.mesnier', 'local.toml');
+   }
+ 
+   private async findProjectRoot(workDir: string): Promise<string> {
+--- a/packages/agent-core-v2/src/workspace/workspaceAgentProfileLoader/internal/agentRoots.ts
++++ b/packages/agent-core-v2/src/workspace/workspaceAgentProfileLoader/internal/agentRoots.ts
+@@ -13,7 +13,7 @@
+ 
+ const USER_BRAND_DIRS = ['agents'] as const;
+ const USER_GENERIC_DIRS = ['.agents/agents'] as const;
+-const PROJECT_BRAND_DIRS = ['.kimi-code/agents'] as const;
++const PROJECT_BRAND_DIRS = ['.mesnier/agents'] as const;
+ const PROJECT_GENERIC_DIRS = ['.agents/agents'] as const;
+ 
+ export async function userAgentRoots(
+--- a/packages/agent-core-v2/src/workspace/workspaceFs/internal/rgLocator.ts
++++ b/packages/agent-core-v2/src/workspace/workspaceFs/internal/rgLocator.ts
+@@ -26,7 +26,7 @@
+ function getShareDir(): string {
+   const override = process.env['KIMI_CODE_HOME'];
+   if (override !== undefined && override !== '') return override;
+-  return join(homedir(), '.kimi-code');
++  return join(homedir(), '.mesnier');
+ }
+ 
+ export function getShareBinRgPath(): string {
+--- a/packages/node-sdk/src/sdk-rpc-client-v2.ts
++++ b/packages/node-sdk/src/sdk-rpc-client-v2.ts
+@@ -353,6 +353,12 @@
+ import { SessionEventWiring } from '#/v2/session-wiring';
+ 
+ export interface SDKRpcClientV2Options {
++  /** Mesnier：隔离用户层发现目录，并由宿主指定运行时名称。 */
++  readonly osHomeDir?: string;
++  /** Mesnier：只供内核读取的私有环境，不进入工具进程环境。 */
++  readonly env?: NodeJS.ProcessEnv;
++  readonly processObserver?: (event: { kind: 'started' | 'exited'; pid: number; pgid?: number }) => void;
++  readonly displayName?: string;
+   readonly homeDir?: string;
+   readonly configPath?: string;
+   readonly identity?: KimiHostIdentity;
+@@ -459,7 +465,11 @@
+         homeDir: this.homeDir,
+         configPath: this.configPath,
+         clientIdentity: identity,
++        osHomeDir: options.osHomeDir,
++        env: options.env,
+         args: {
++          displayName: options.displayName,
++          processObserver: options.processObserver,
+           // Host identity headers for the engine's outbound requests (model,
+           // WebSearch, registry refresh). Without them the managed vendors go
+           // out with the SDK's default User-Agent and no X-Msh-* at all.
+--- a/packages/node-sdk/src/types.ts
++++ b/packages/node-sdk/src/types.ts
+@@ -216,6 +216,12 @@
+ }
+ 
+ export interface KimiHarnessOptions {
++  /** Mesnier：隔离用户层发现目录，并由宿主指定运行时名称。 */
++  readonly osHomeDir?: string;
++  /** Mesnier：只供内核读取的私有环境，不进入工具进程环境。 */
++  readonly env?: NodeJS.ProcessEnv;
++  readonly processObserver?: (event: { kind: 'started' | 'exited'; pid: number; pgid?: number }) => void;
++  readonly displayName?: string;
+   readonly identity?: KimiHostIdentity | undefined;
+   readonly homeDir?: string | undefined;
+   readonly configPath?: string | undefined;
+--- a/packages/agent-core-v2/src/agent/llmRequester/llmRequesterService.ts
++++ b/packages/agent-core-v2/src/agent/llmRequester/llmRequesterService.ts
+@@ -497,13 +497,14 @@
+           finishedAt: Date.now(),
+         });
+       }
+-      void this.usage.record(
+-        this.scopeContext.agentContext,
+-        request.modelAlias,
+-        usage ?? emptyUsage(),
+-        request.source,
+-      );
+       if (usage !== undefined) {
++        // Mesnier 必须区分供应方未提供用量和真实零消耗。
++        void this.usage.record(
++          this.scopeContext.agentContext,
++          request.modelAlias,
++          usage,
++          request.source,
++        );
+         this.tokenCounting.measured(this.scopeContext.agentContext, request.messages, [message], usage);
+       }
+       this.logResponse(request.logFields, usage ?? emptyUsage(), timing);

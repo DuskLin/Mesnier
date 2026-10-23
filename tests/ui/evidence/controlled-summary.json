@@ -1,0 +1,255 @@
+{
+  "kind": "real-electron-controlled-model",
+  "startedAt": "2026-10-22T17:52:33.863Z",
+  "finishedAt": "2026-10-22T17:52:54.833Z",
+  "head": "8c24fab64fc474acde995c52897b3c3a85d0ac4b",
+  "worktree": "M apps/desktop/src/main/artifacts.ts\n M apps/desktop/src/main/index.ts\n M apps/desktop/src/main/runtime-client.ts\n M apps/desktop/src/main/store.ts\n M apps/desktop/src/main/workbench.ts\n M openspec/changes/adopt-kimi-agent-foundation/design.md\n M openspec/changes/adopt-kimi-agent-foundation/specs/managed-agent-runtime/spec.md\n M package-lock.json\n M package.json\n M packages/shared/src/index.ts\n M scripts/package.mjs\n M tests/host/lifecycle.test.ts\n?? apps/desktop/src/main/process-tracker.ts\n?? scripts/test-runtime.mjs\n?? tests/host/process-cleanup.test.ts",
+  "testSourceSha256": "7f18336f1ee1c7d3ab7f9f377d5dde73f9c9a53963dd595c4db35667423db651",
+  "environment": {
+    "platform": "darwin",
+    "release": "24.6.0",
+    "architecture": "arm64",
+    "node": "v22.22.0",
+    "electron": "41.0.3"
+  },
+  "buildHashes": {
+    "dist/main/index.cjs": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c",
+    "dist/preload/index.cjs": "1fd034e4256e8b3438c5b077325e5f449b3af06873f39530a2ac71eb233db2a8",
+    "dist/renderer/index.html": "e5799d7ac518be21d62f8adaf36c3d2d714ffc21a974a60e4dc65dba3619aaa3",
+    "dist/renderer/assets/index-BICAMlQ0.css": "e1128832bd18b331f2460632b9045ac5f5c9cfad3c1068f224e9990dae0cc603",
+    "dist/renderer/assets/index-TwdAAzQ0.js": "e680806cd1dd2096a58621a14a5e68747366d34422f8a547a228adf4310437f0",
+    "dist/renderer/assets/mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184",
+    "build/runtime/worker.mjs": "c6bea9a81361647a345cae3dfeccc4125dc138f5e6ede69e49efa7ece65cc189",
+    "build/runtime/bin/node": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32"
+  },
+  "runtimeTree": {
+    "sha256": "cd786ef041c69c1fcc52a99da397bdcc27b673604eff3a23f1ecbae229aaed6f",
+    "files": 23628
+  },
+  "directoryChecks": {
+    "work": {
+      "exitCode": 128,
+      "stdout": "",
+      "stderr": "fatal: not a git repository (or any of the parent directories): .git"
+    },
+    "coding": {
+      "exitCode": 0,
+      "stdout": "true"
+    }
+  },
+  "checks": [
+    {
+      "name": "首次启动无演示记录，深浅主题可切换",
+      "startedAt": "2026-10-22T17:52:41.426Z",
+      "passed": true
+    },
+    {
+      "name": "模型设置可创建与编辑，不向快照泄露密钥",
+      "startedAt": "2026-10-22T17:52:41.634Z",
+      "passed": true
+    },
+    {
+      "name": "真实普通目录可创建项目，会话草稿保留且新建任务不自动执行",
+      "startedAt": "2026-10-22T17:52:42.066Z",
+      "passed": true
+    },
+    {
+      "name": "看板筛选、任务编辑和会话重命名保留关联身份",
+      "startedAt": "2026-10-22T17:52:42.461Z",
+      "passed": true
+    },
+    {
+      "name": "新增默认模型立即用于后续选择，删除后回到保留的模型",
+      "startedAt": "2026-10-22T17:52:42.709Z",
+      "passed": true
+    },
+    {
+      "name": "可发送状态下中文组合输入不发送，会话切换保留各自草稿",
+      "startedAt": "2026-10-22T17:52:43.035Z",
+      "passed": true
+    },
+    {
+      "name": "最小窗口不溢出应用，主题和历史在真实重启后恢复",
+      "startedAt": "2026-10-22T17:52:43.331Z",
+      "passed": true
+    },
+    {
+      "name": "Chat → Board → Chat 保持同一审批与执行，允许后真实文件写入且进入待验收",
+      "startedAt": "2026-10-22T17:52:44.624Z",
+      "passed": true
+    },
+    {
+      "name": "真实产物可预览与复制，丢失文件明确报错，明确验收才成为已完成",
+      "startedAt": "2026-10-22T17:52:45.333Z",
+      "passed": true
+    },
+    {
+      "name": "拒绝真实 Write 授权不写文件，界面保留拒绝事实",
+      "startedAt": "2026-10-22T17:52:45.851Z",
+      "passed": true
+    },
+    {
+      "name": "执行中修改默认模型保留启动快照，取消确认且保留已经写入的文件",
+      "startedAt": "2026-10-22T17:52:46.335Z",
+      "passed": true
+    },
+    {
+      "name": "显式重试生成新身份，使用新模型且不覆盖原取消记录",
+      "startedAt": "2026-10-22T17:52:47.007Z",
+      "passed": true
+    },
+    {
+      "name": "模型失败传播到真实界面，服务回显的凭据被脱敏",
+      "startedAt": "2026-10-22T17:52:48.206Z",
+      "passed": true
+    },
+    {
+      "name": "正常关闭保留已确认取消，重启不重放，显式新输入恢复同一会话",
+      "startedAt": "2026-10-22T17:52:48.540Z",
+      "passed": true
+    },
+    {
+      "name": "实际强杀应用后未确认执行标为中断，无孤立运行时和自动重放",
+      "startedAt": "2026-10-22T17:52:50.443Z",
+      "passed": true
+    },
+    {
+      "name": "Git Coding 项目从看板启动，拒绝不改文件，批准后留下真实代码差异",
+      "startedAt": "2026-10-22T17:52:52.027Z",
+      "passed": true
+    },
+    {
+      "name": "缺失用量显示未提供，真实零和含缓存的正数保留实际值",
+      "startedAt": "2026-10-22T17:52:53.574Z",
+      "passed": true
+    }
+  ],
+  "pageErrors": [],
+  "passed": true,
+  "runtime": {
+    "ready": true,
+    "version": "0.1.0",
+    "upstreamCommit": "44cdf8f4039e2ff20d3fe8a4e7868bd90fd786e1"
+  },
+  "modelKind": "controlled-http-fixture",
+  "normalExitStatus": "cancelled",
+  "clipboard": {
+    "tested": true,
+    "restored": true
+  },
+  "finalState": {
+    "projects": 2,
+    "sessions": 9,
+    "tasks": [
+      {
+        "id": "34b7d4af-a204-4d18-a775-0fc2575312d3",
+        "status": "done"
+      },
+      {
+        "id": "df15e000-9180-46cb-9e9e-9314f2f40dcf",
+        "status": "review"
+      }
+    ],
+    "runs": [
+      {
+        "id": "d1b9f604-8b7d-490d-9497-0acdb5aefaac",
+        "status": "succeeded",
+        "modelId": "7167a252-09ff-491e-9c5d-0918d18c4062"
+      },
+      {
+        "id": "5d378f7a-103c-4aad-9d1c-b49887ca822f",
+        "status": "succeeded",
+        "modelId": "7167a252-09ff-491e-9c5d-0918d18c4062"
+      },
+      {
+        "id": "fbf49999-fbef-4dc0-aed5-9400878f1b4b",
+        "status": "cancelled",
+        "modelId": "7167a252-09ff-491e-9c5d-0918d18c4062"
+      },
+      {
+        "id": "5170c5bf-678b-4f19-87dc-7913bede5918",
+        "status": "succeeded",
+        "retryOf": "fbf49999-fbef-4dc0-aed5-9400878f1b4b",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "22856c2f-f12a-4dbe-bffc-c35a8172cb51",
+        "status": "failed",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "244c4908-26c3-45f7-a9ae-150cd8a860f9",
+        "status": "cancelled",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "77dc4e52-8bc5-4817-918f-b9bcf9ff176e",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "29e94fe1-ef67-4bb2-93b5-d9f37a35c98a",
+        "status": "interrupted",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "fcc0d6b5-70db-4f58-83e9-05b571fac3ad",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "ca3a744a-bcdc-4c1b-a065-9193d2249309",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "954a2edb-9c18-4326-8383-12d889f4c606",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "151a45b0-1bd4-42f9-897d-dde5d447f5fb",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "eaa8bbbc-4ddc-4955-b605-e1faac2a6ec7",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "dce6c598-186a-45bf-8d7d-c92754d912e0",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      },
+      {
+        "id": "e1f6ff9d-4181-42c2-a175-61039f10e42b",
+        "status": "succeeded",
+        "modelId": "3524abdd-392e-4f32-a9a7-8f19ae86fa0e"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "2cd0e093-a3e8-4389-acc6-43ff4bc131e4",
+        "runId": "d1b9f604-8b7d-490d-9497-0acdb5aefaac",
+        "relativePath": "deliverable.md",
+        "change": "created"
+      },
+      {
+        "id": "0d7bbdb2-aaee-4f61-94f4-267c7bf9ae77",
+        "runId": "fbf49999-fbef-4dc0-aed5-9400878f1b4b",
+        "relativePath": "cancel-side-effect.txt",
+        "change": "created"
+      },
+      {
+        "id": "1c21d451-3728-46e2-b7fc-1523afd12915",
+        "runId": "954a2edb-9c18-4326-8383-12d889f4c606",
+        "relativePath": "sum.js",
+        "change": "modified"
+      }
+    ]
+  },
+  "codingBaseline": "e4b67c24eaf8e93f392a2bfbbe93b1e1750db53c",
+  "codingDiff": "diff --git a/sum.js b/sum.js\nindex 2abed46..bc5f04d 100644\n--- a/sum.js\n+++ b/sum.js\n@@ -1 +1 @@\n-export const sum = (a, b) => a - b;\n+export const sum = (a, b) => a + b;\n",
+  "localEvidence": "mesnier-ui/.evidence/ui/final-usage-20261023"
+}

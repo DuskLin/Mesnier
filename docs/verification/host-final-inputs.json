@@ -1,0 +1,23 @@
+{
+  "baseline": "35b4569d6b0d77baa4f04c600d8f446653927731",
+  "files": {
+    "apps/desktop/src/main/artifacts.ts": "9eaad697f2856db0cf88d4ce49c364d2263cec24770adbcdc3d9cc048b7d292a",
+    "apps/desktop/src/main/index.ts": "42920fc01a37a8abf07bdaecfa71ae6a74f4662836db103c956e343a49a32f5d",
+    "apps/desktop/src/main/process-tracker.ts": "7a2b3855f17f58686065f9caba85a1618c61fd58e01798d6deaf0f261ef51e52",
+    "apps/desktop/src/main/runtime-client.ts": "d843018138fe87473044be2c7011e27ee7995e8966ce79039ae1393ffe29802e",
+    "apps/desktop/src/main/store.ts": "83004e3985b7c86431570b65746706e30bfdb6d78becdf99fc66977f322a9f33",
+    "apps/desktop/src/main/workbench.ts": "e119a2ea2c327115642aeb34d88c48b3ff2e244a38df0910214d01c1e7159c35",
+    "package-lock.json": "e3879acb16852c04c4a24c16c7d7106ba2e5cc403eb2a2bf5bd11b050aeb3d47",
+    "package.json": "6f2d7e44daa63b2c9fab933171f76564e3af0c85ab9b511641885020ee5af354",
+    "packages/runtime/test/rpc.test.mjs": "1c13057fdb824af248196e69f799dc992d86fc77e64b4a044b6a6437447efa72",
+    "packages/shared/src/index.ts": "0759840ec8a791b5335daac43a3305e4eea8dbfda3206cd120fcd9e6f7eec12c",
+    "scripts/package.mjs": "268d24447ae798eb0f1aacce9c3f6c3baad971bdd518c43f5b3940543f1b5aba",
+    "scripts/test-runtime.mjs": "6925d7456756b93db5d38d5fa984aba4aa4db533b1f229d33f8b41c9e9b119ea",
+    "tests/host/host-races.test.ts": "ccca191f354466599570dcbeed73c1beda8dd21e45c96254006519e450fe17c6",
+    "tests/host/host-review.test.ts": "a0717954ea66f67504a801e0915ce3a7f91293b2ea744bf018606570305f3ae4",
+    "tests/host/lifecycle.test.ts": "cdae18bf6de14363f3b14ce5eda9206fc73d24ffc7b4c737d214cd328da73ad3",
+    "tests/host/process-cleanup.test.ts": "2189d529a66c70e2589733d626cb07f988f2b5075bf3524ac240334341423c5c",
+    "tests/host/process-members.test.ts": "83f2178936b44c278d7df83fa304aacd0e96f571a176d474daac8a62df7a45bb"
+  },
+  "buildMainSha256": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c"
+}
