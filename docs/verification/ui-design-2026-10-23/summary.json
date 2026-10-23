@@ -1,0 +1,139 @@
+{
+  "head": "ef2a2aa0eb805a79f3e6cad52b505611e66e241f",
+  "kind": "real-electron-controlled-model",
+  "environment": {
+    "platform": "darwin",
+    "release": "24.6.0",
+    "architecture": "arm64",
+    "node": "v24.15.0",
+    "electron": "41.0.3"
+  },
+  "passed": true,
+  "checks": [
+    {
+      "name": "首次启动无演示记录，深浅主题可切换",
+      "startedAt": "2026-10-23T03:12:33.730Z",
+      "passed": true
+    },
+    {
+      "name": "模型设置可创建与编辑，不向快照泄露密钥",
+      "startedAt": "2026-10-23T03:12:33.925Z",
+      "passed": true
+    },
+    {
+      "name": "真实普通目录可创建项目，会话草稿保留且新建任务不自动执行",
+      "startedAt": "2026-10-23T03:12:34.291Z",
+      "passed": true
+    },
+    {
+      "name": "看板筛选、任务编辑和会话重命名保留关联身份",
+      "startedAt": "2026-10-23T03:12:34.628Z",
+      "passed": true
+    },
+    {
+      "name": "新增默认模型立即用于后续选择，删除后回到保留的模型",
+      "startedAt": "2026-10-23T03:12:34.866Z",
+      "passed": true
+    },
+    {
+      "name": "可发送状态下中文组合输入不发送，会话切换保留各自草稿",
+      "startedAt": "2026-10-23T03:12:35.167Z",
+      "passed": true
+    },
+    {
+      "name": "最小窗口不溢出应用，主题和历史在真实重启后恢复",
+      "startedAt": "2026-10-23T03:12:35.433Z",
+      "passed": true
+    },
+    {
+      "name": "Chat → Board → Chat 保持同一审批与执行，允许后真实文件写入且进入待验收",
+      "startedAt": "2026-10-23T03:12:36.928Z",
+      "passed": true
+    },
+    {
+      "name": "真实产物可预览与复制，丢失文件明确报错，明确验收才成为已完成",
+      "startedAt": "2026-10-23T03:12:37.611Z",
+      "passed": true
+    },
+    {
+      "name": "拒绝真实 Write 授权不写文件，界面保留拒绝事实",
+      "startedAt": "2026-10-23T03:12:38.112Z",
+      "passed": true
+    },
+    {
+      "name": "执行中修改默认模型保留启动快照，取消确认且保留已经写入的文件",
+      "startedAt": "2026-10-23T03:12:38.577Z",
+      "passed": true
+    },
+    {
+      "name": "显式重试生成新身份，使用新模型且不覆盖原取消记录",
+      "startedAt": "2026-10-23T03:12:39.425Z",
+      "passed": true
+    },
+    {
+      "name": "模型失败传播到真实界面，服务回显的凭据被脱敏",
+      "startedAt": "2026-10-23T03:12:40.609Z",
+      "passed": true
+    },
+    {
+      "name": "正常关闭保留已确认取消，重启不重放，显式新输入恢复同一会话",
+      "startedAt": "2026-10-23T03:12:40.984Z",
+      "passed": true
+    },
+    {
+      "name": "实际强杀应用后未确认执行标为中断，无孤立运行时和自动重放",
+      "startedAt": "2026-10-23T03:12:42.735Z",
+      "passed": true
+    },
+    {
+      "name": "Git Coding 项目从看板启动，拒绝不改文件，批准后留下真实代码差异",
+      "startedAt": "2026-10-23T03:12:44.360Z",
+      "passed": true
+    },
+    {
+      "name": "缺失用量显示未提供，真实零和含缓存的正数保留实际值",
+      "startedAt": "2026-10-23T03:12:45.874Z",
+      "passed": true
+    }
+  ],
+  "pageErrors": [],
+  "buildHashes": {
+    "dist/main/index.cjs": "919ed1498fbdc69b91808eac89bce43a27ac33d252f2ed90462a5ec69960477c",
+    "dist/preload/index.cjs": "1fd034e4256e8b3438c5b077325e5f449b3af06873f39530a2ac71eb233db2a8",
+    "dist/renderer/index.html": "0370dbb1f726562dfa4e51a6968572b1a11cdd77d51ffa5c74be2380e501ca4c",
+    "dist/renderer/assets/index-CYqYXyN8.css": "96b635ebfcc54f28bff68ba203be9769f5c7ec6772288716e9448b582960b7c0",
+    "dist/renderer/assets/index-DkG1XdEz.js": "4f0a3a6aaaaa4df4f63bde9d86d145011cbe8a5aacdb89d047834ac2bf1b1784",
+    "dist/renderer/assets/mesnier-logo-BO6nUCpT.png": "f7b26d18371aff2ee06f8f3400129a35ddacaf12aba868534322a01ded091184",
+    "build/runtime/worker.mjs": "c6bea9a81361647a345cae3dfeccc4125dc138f5e6ede69e49efa7ece65cc189",
+    "build/runtime/bin/node": "3200fbd9f7fd4410426dd541e10d1ab829d3472f270d743c7fabd1696c03fe32"
+  },
+  "testSourceSha256": "2fe66ab86a984d88a018896b23430aee1a8b98a3ae3db324c5e373591487cd20",
+  "runtimeTree": {
+    "sha256": "a77851f73b1e339f0aba97a9c88c4fa90160ac60dad9ae1efe6f094c7a29c37d",
+    "files": 23639
+  },
+  "modelKind": "controlled-http-fixture",
+  "startedAt": "2026-10-23T03:12:27.722Z",
+  "finishedAt": "2026-10-23T03:12:47.245Z",
+  "sourceHashes": {
+    "apps/desktop/src/renderer/App.tsx": "47a87e18077d92ef66b848755b2b6561f285c12c56dcaefe89ceec4919cd4ddf",
+    "apps/desktop/src/renderer/components/Board.tsx": "8cebffe56f0cc01028b2c753d78a3499987e2c1c089b935b5e686111e969985d",
+    "apps/desktop/src/renderer/styles.css": "52550cd9336d44643f75d57a938e41ef04050bc2b64a1a319a5b2e00cc0caec4",
+    "scripts/check-design.mjs": "513136ef8cce7f943965bf2c7e5ba994de05437b74035f3510b4bc1387c0e388",
+    "package.json": "1206c1d393f270a374c57e26093c1bf1cb754ad4ce14e4e9a70f0fcf59972652",
+    "tests/ui/electron-acceptance.test.mjs": "2fe66ab86a984d88a018896b23430aee1a8b98a3ae3db324c5e373591487cd20"
+  },
+  "screenshotHashes": {
+    "before-welcome.png": "6496ab8917d033a6447c1740637b0ab5589d732e293cff97c97517ebf86184a3",
+    "after-welcome.png": "4bc49cd52f4a3bff7e2aebcc97a940feb4ee662b72c741cc27e6ab6c88466bbf",
+    "after-board.png": "6a6e5bcf0476085342de5a45273caec927c50830dab45f2d43afbca2039e4dc3",
+    "after-chat-narrow.png": "45115aeb0a56e45b9c91a1bfed61b436b966f2412bce5ee8ea059e039337d4de",
+    "after-inspector-narrow.png": "9cbb7f165725c6ab7f9b8d8fe47e04076ff749fcea354a2d8cf86df044d34108",
+    "after-settings-narrow.png": "613b933b1fcaeed79722a288f3c3f9bcab876785e3eb5288028e34f028dff98e"
+  },
+  "designNegativeCheck": {
+    "exitCode": 1,
+    "stderr": "apps/desktop/src/renderer/styles.css: 组件颜色必须引用主题 token\napps/desktop/src/renderer/styles.css: 字号必须引用语义 token：11px\n",
+    "scope": "隔离副本中注入字号与颜色违例"
+  }
+}
