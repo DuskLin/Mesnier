@@ -16,7 +16,8 @@ export function Settings({ snapshot, bridge, onClose, theme, setTheme }: { snaps
   const saved = snapshot.models.find((item) => item.id === form.id);
   const patch = (value: Partial<ModelInput>) => { setForm((previous) => ({ ...previous, ...value })); setMessage(undefined); setConfirmDelete(false); };
   const choose = (model?: ModelConfig) => { setForm(model ? { id: model.id, name: model.name, provider: model.provider, baseUrl: model.baseUrl, model: model.model, maxContextSize: model.maxContextSize, apiKey: '' } : emptyInput()); setMessage(undefined); setConfirmDelete(false); };
-  const valid = !!form.name.trim() && !!form.baseUrl.trim() && !!form.model.trim() && (form.maxContextSize ?? 0) >= 1024;
+  const contextSize = form.maxContextSize ?? 0;
+  const valid = !!form.name.trim() && !!form.baseUrl.trim() && !!form.model.trim() && Number.isInteger(contextSize) && contextSize >= 1024 && contextSize <= 10000000;
   const perform = async (work: () => Promise<void>) => {
     if (lock.current) return;
     lock.current = true; setPending(true); setMessage(undefined);
@@ -39,7 +40,7 @@ export function Settings({ snapshot, bridge, onClose, theme, setTheme }: { snaps
       <label className="field"><span>API 地址</span><input required type="url" disabled={pending} value={form.baseUrl} placeholder={baseUrls[form.provider]} spellCheck={false} onChange={(event) => patch({ baseUrl: event.target.value })} /><small>填写服务提供的接口地址，具体兼容性以连接验证和实际执行为准。</small></label>
       <div className="form-grid">
         <label className="field"><span>模型名称</span><input required disabled={pending} value={form.model} placeholder="服务提供的模型 ID" spellCheck={false} onChange={(event) => patch({ model: event.target.value })} /></label>
-        <label className="field"><span>上下文长度</span><input required type="number" min={1024} step={1024} disabled={pending} value={form.maxContextSize} onChange={(event) => patch({ maxContextSize: Number(event.target.value) })} /></label>
+        <label className="field"><span>上下文长度</span><input required type="number" min={1024} max={10000000} step={1} disabled={pending} value={form.maxContextSize} onChange={(event) => patch({ maxContextSize: Number(event.target.value) })} /><small>填写 1024～10000000 之间的整数。</small></label>
       </div>
       <label className="field"><span><KeyRound size={12} style={{ verticalAlign: '-2px', marginRight: 5 }} />API 密钥</span><input type="password" autoComplete="new-password" disabled={pending} value={form.apiKey ?? ''} spellCheck={false} placeholder={saved?.hasApiKey ? '已安全保存；留空保留现有密钥' : '填写服务提供的密钥'} onChange={(event) => patch({ apiKey: event.target.value })} /><small>密钥由应用在本机加密保存。当前界面无法读取已保存的密钥。</small></label>
       {message ? <div className={`inline-notice ${message.ok ? 'success' : 'error'}`} role="status">{message.ok ? <Check size={16} /> : <CircleAlert size={16} />}<span>{message.text}</span></div> : saved && <div className={`inline-notice ${saved.status === 'ready' ? 'success' : saved.status === 'error' ? 'error' : ''}`}><Cpu size={16} /><span>{saved.status === 'ready' ? '连接验证通过' : saved.status === 'error' ? saved.error || '上次验证失败' : '配置已保存，尚未验证连接'}{saved.lastTestedAt ? ` · ${shortDate(saved.lastTestedAt)}` : ''}</span></div>}

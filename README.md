@@ -13,7 +13,7 @@ Mesnier 以新版 [Kimi Code](https://github.com/MoonshotAI/kimi-code) 的 TypeS
 
 应用负责工作空间、对话、看板、任务编排、验收与产物管理；派生内核复用并按需扩展 Kimi Code 的模型调用、工具循环、上下文、权限交互和会话能力。首版不要求用户预装 Agent CLI，在应用内完成模型配置后开始工作。
 
-> **项目状态：Mesnier 0.1.0 已完成当前 Mac 的安装与功能验收。** 已按 [交付目标](docs/goals/mesnier-app.md) 实现内置运行时、工作台和本地闭环，实际证据见 [发行验收](docs/verification/release-0.1.0.md)。源码 PR 的 main 合并受仓库规则阻止；未实现的平台与扩展仍保留为路线图。首版变更归档见 [采用 Kimi Code Agent 底座](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/proposal.md)。
+> **项目状态：Mesnier 0.1.0 已完成当前 Mac 的安装与功能验收。** 已按 [交付目标](docs/goals/mesnier-app.md) 实现内置运行时、工作台和本地闭环，实际证据见 [发行验收](docs/verification/release-0.1.0.md)。源码已通过 PR #1 合入 main；未实现的平台与扩展仍保留为路线图。 0.1.1 修复模型设置中的上下文长度校验，允许范围内任意整数；验证见 [上下文输入回归](docs/verification/context-length-2026-10-23.md)。首版变更归档见 [采用 Kimi Code Agent 底座](openspec/changes/archive/2026-10-23-adopt-kimi-agent-foundation/proposal.md)。
 
 ## 为什么做 Mesnier
 
